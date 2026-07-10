@@ -76,7 +76,7 @@ Just notice.
 
 …
 
-I wonder…
+I wonder~…~
 
 When did you first learn that other people's expectations mattered more than your own?
 
@@ -96,7 +96,7 @@ Just allow your mind to search.
 
 Children are extraordinary observers.
 
-Before they know who they are, they learn who they need to be.
+Before they know who they __are__, they learn who they _need to_ be.
 
 ::: grid
 {left} Accepted.
@@ -155,9 +155,9 @@ No one had an opinion about your career.
 
 {left} Your relationships.
 
-{center} Your appearance.
+{right} Your appearance.
 
-{right} Your choices.
+{center} Your choices.
 :::
 
 ::: grid
@@ -216,9 +216,9 @@ Perhaps your mind immediately produces reasons.
 
 {left} Responsibilities.
 
-{center} Obligations.
+{right} Obligations.
 
-{right} Consequences.
+{center} Consequences.
 :::
 
 That's okay.

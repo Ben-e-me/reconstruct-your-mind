@@ -14,10 +14,12 @@
   --beat-size: clamp(2.4rem, 6.3vw, 3.9rem);
   --title-size: clamp(3.3rem, 9vw, 5.4rem);
   --line: 1.26;
-  --measure: 27.6ch; /* +15% */
+  /* text box width: only 3x the arrow-to-edge gap (1.6rem) between text and the arrows.
+     arrow inner edge = 4rem from edge; + 3*1.6rem = 8.8rem margin per side. */
+  --measure: clamp(16rem, calc(100vw - 17.6rem), 72rem);
 
-  /* vertical rhythm between separately-revealed parts (stack/grid), doubled */
-  --group-gap: 1.1em;
+  /* vertical rhythm between separately-revealed parts (stack/grid), tripled */
+  --group-gap: 1.65em;
 
   /* optical center, nudged 5% lower */
   --anchor: 45vh;

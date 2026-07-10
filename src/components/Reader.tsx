@@ -1,14 +1,40 @@
 import { useCallback, useEffect, useMemo, useState, type MouseEvent } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import storyRaw from '../content/story.txt?raw'
-import { parseStory } from '../lib/parseStory'
+import { parseStory, type Beat as BeatT } from '../lib/parseStory'
 import { useReader } from '../hooks/useReader'
 import { useIdleUI } from '../hooks/useIdleUI'
 import { useTheme } from '../hooks/useTheme'
-import { BLUR_DUR, ELLIPSIS_PAUSE, ELLIPSIS_DOT_STAGGER, LETTER_DUR, revealDuration } from '../lib/anim'
+import {
+  ARROW_DELAY,
+  BLUR_DUR,
+  ELLIPSIS_PAUSE,
+  ELLIPSIS_DOT_STAGGER,
+  LETTER_DUR,
+  revealDuration,
+} from '../lib/anim'
 import { Beat } from './Beat'
 import { Controls } from './Controls'
 import { TitleScreen } from './TitleScreen'
+
+// group grid beats into rows: a {left} directly followed by a {right} share one row
+function gridRows(beats: BeatT[]): { beat: BeatT; index: number }[][] {
+  const rows: { beat: BeatT; index: number }[][] = []
+  for (let i = 0; i < beats.length; ) {
+    const b = beats[i]
+    if (b.placement === 'left' && beats[i + 1]?.placement === 'right') {
+      rows.push([
+        { beat: b, index: i },
+        { beat: beats[i + 1], index: i + 1 },
+      ])
+      i += 2
+    } else {
+      rows.push([{ beat: b, index: i }])
+      i += 1
+    }
+  }
+  return rows
+}
 
 export function Reader() {
   const scenes = useMemo(() => parseStory(storyRaw), [])
@@ -40,7 +66,7 @@ export function Reader() {
     return () => window.removeEventListener('keydown', onKey)
   }, [phase, start])
 
-  // when the current step's animation is fully done, nudge the forward arrow
+  // nudge the forward arrow once the current step is fully done
   useEffect(() => {
     setBeatDone(false)
     if (phase !== 'reading' || !scene) return
@@ -51,7 +77,7 @@ export function Reader() {
     if (nextBeat?.type === 'ellipsis') {
       finish = revealDuration(cur.words) + ELLIPSIS_PAUSE + 2 * ELLIPSIS_DOT_STAGGER + LETTER_DUR
     }
-    const timer = window.setTimeout(() => setBeatDone(true), (finish + 0.3) * 1000)
+    const timer = window.setTimeout(() => setBeatDone(true), (finish + ARROW_DELAY) * 1000)
     return () => window.clearTimeout(timer)
   }, [phase, scene, revealedLocalIndex])
 
@@ -61,6 +87,16 @@ export function Reader() {
   }
 
   const transition = { duration: BLUR_DUR, ease: 'easeInOut' as const }
+
+  const renderBeat = (b: BeatT, index: number) => {
+    const revealed = index <= revealedLocalIndex || (b.type === 'ellipsis' && index - 1 <= revealedLocalIndex)
+    const dimmed = b.type !== 'ellipsis' && index < revealedLocalIndex
+    const startAfter =
+      b.type === 'ellipsis' && index > 0 && scene
+        ? revealDuration(scene.beats[index - 1].words) + ELLIPSIS_PAUSE
+        : 0
+    return <Beat key={b.id} beat={b} revealed={revealed} dimmed={dimmed} startAfter={startAfter} />
+  }
 
   return (
     <div className="stage" onClick={phase === 'title' ? start : next}>
@@ -85,12 +121,13 @@ export function Reader() {
             exit={{ opacity: 0, filter: 'blur(12px)' }}
             transition={transition}
           >
-            {scene?.beats.map((b, i) => {
-              const revealed = i <= revealedLocalIndex || (b.type === 'ellipsis' && i - 1 <= revealedLocalIndex)
-              const startAfter =
-                b.type === 'ellipsis' && i > 0 ? revealDuration(scene.beats[i - 1].words) + ELLIPSIS_PAUSE : 0
-              return <Beat key={b.id} beat={b} revealed={revealed} startAfter={startAfter} />
-            })}
+            {scene?.kind === 'grid'
+              ? gridRows(scene.beats).map((row, ri) => (
+                  <div key={ri} className={`grid-row ${row.length === 1 ? 'lead' : ''}`}>
+                    {row.map(({ beat, index }) => renderBeat(beat, index))}
+                  </div>
+                ))
+              : scene?.beats.map((b, i) => renderBeat(b, i))}
           </motion.section>
         )}
       </AnimatePresence>

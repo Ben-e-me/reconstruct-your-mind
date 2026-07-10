@@ -35,7 +35,8 @@ body {
   top: var(--anchor);
   left: 50%;
   transform: translate(-50%, -50%);
-  width: min(92vw, 46rem);
+  width: var(--measure);
+  max-width: 100vw;
 }
 
 .scene.stack {
@@ -45,17 +46,31 @@ body {
   gap: var(--group-gap);
 }
 
-/* grid: {left}/{right} sit as a centered pair with a gap = the vertical rhythm */
+/* grid: each row is a centered pair ({left} + gap + {right}); rows stack vertically */
 .scene.grid {
-  display: grid;
-  grid-template-columns: auto auto;
-  grid-auto-flow: row dense;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--group-gap);
+  width: auto;
+  max-width: var(--measure);
+}
+.grid-row {
+  display: flex;
   justify-content: center;
   align-items: baseline;
-  column-gap: var(--group-gap);
-  row-gap: var(--group-gap);
-  width: auto;
-  max-width: 92vw;
+  gap: var(--group-gap);
+}
+.grid-row.lead {
+  margin-bottom: 0.5em; /* extra breathing room after a normal line */
+}
+.grid-row .beat {
+  text-align: center;
+}
+.grid-row .place-left,
+.grid-row .place-right {
+  white-space: nowrap;
+  max-width: none;
 }
 
 .beat {
@@ -68,26 +83,6 @@ body {
 
 .scene.stack .beat {
   text-align: center;
-}
-
-.scene.grid .place-center {
-  grid-column: 1 / -1;
-  text-align: center;
-  max-width: none;
-}
-.scene.grid .place-left {
-  grid-column: 1;
-  justify-self: end;
-  text-align: right;
-  white-space: nowrap;
-  max-width: none;
-}
-.scene.grid .place-right {
-  grid-column: 2;
-  justify-self: start;
-  text-align: left;
-  white-space: nowrap;
-  max-width: none;
 }
 
 .title {
@@ -107,17 +102,18 @@ body {
 }
 
 /* inline emphasis */
-.quote {
+.quote,
+.italic {
   font-style: italic;
 }
 .impact {
   font-weight: 800;
 }
 .bold {
-  font-weight: 700;
+  font-weight: 805;
 }
 .light {
-  font-weight: 300;
+  font-weight: 300; /* Merriweather variable bottoms out at 300 */
 }
 .soft {
   opacity: 0.5;
@@ -133,8 +129,11 @@ body {
   -webkit-text-fill-color: transparent;
 }
 
-/* organic-beat: magic rings behind the word */
-.organic-beat .letter {
+/* organic-beat: one subtle liquid rust glow centered behind the whole phrase */
+.organic-group {
+  position: relative;
+}
+.organic-group .letter {
   position: relative;
   z-index: 1;
 }
@@ -143,25 +142,71 @@ body {
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 6em;
-  height: 7em;
+  width: 8em;
+  height: 5.5em;
   pointer-events: none;
   z-index: 0;
-  filter: blur(7px);
+}
+.magic-rings::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 58% 70% at 50% 50%, transparent 42%, var(--grad-2) 54%, transparent 74%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 34%, transparent 66%, #000 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 34%, transparent 66%, #000 100%);
+  filter: blur(9px);
+  opacity: 0.5;
+  animation: rings-breathe 4.4s ease-in-out infinite;
+}
+@keyframes rings-breathe {
+  0%,
+  100% {
+    opacity: 0.12;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.05);
+  }
 }
 
-/* standalone ellipsis — large, quiet, close under the last line */
+/* standalone ellipsis — large, quiet, close under the last line; dots pulse in sequence */
 .ellipsis {
   display: flex;
   justify-content: center;
   gap: 0.112em;
   font-size: calc(var(--beat-size) * 3.6);
   line-height: 0.4;
-  margin-top: calc(var(--beat-size) * 0.24);
+  margin-top: calc(var(--beat-size) * 0.168);
 }
 .ellipsis .dot {
   display: inline-block;
   line-height: 1;
+  opacity: 0;
+}
+.ellipsis .dot.pulsing {
+  animation-name: ellipsis-in, ellipsis-pulse;
+  animation-duration: 0.6s, 2.4s;
+  animation-timing-function: ease-out, ease-in-out;
+  animation-iteration-count: 1, infinite;
+  animation-fill-mode: both, none;
+}
+@keyframes ellipsis-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.6;
+  }
+}
+@keyframes ellipsis-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.35;
+  }
 }
 
 .divider {
@@ -195,12 +240,12 @@ body {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: calc(var(--beat-size) * 0.7); /* title -> subline, +40% */
+  gap: calc(var(--beat-size) * 0.7);
 }
 .ts-title {
   font-size: var(--ts-title-size);
   font-weight: 700;
-  letter-spacing: 0.05em; /* +50% tracking */
+  letter-spacing: 0.05em;
   line-height: 1.05;
   white-space: nowrap;
 }
@@ -264,10 +309,6 @@ body {
 .ctrl:hover {
   opacity: 1;
 }
-.ctrl:disabled {
-  opacity: 0.12;
-  cursor: default;
-}
 
 /* top-centered buttons: RESTART | LIGHT MODE / DARK MODE */
 .topbar {
@@ -330,8 +371,10 @@ body {
   pointer-events: none;
   cursor: default;
 }
+/* forward arrow, once the beat is done: fade in to 60%, then pulse 60% <-> 35% */
 .arrow-right.ready {
-  animation: arrow-pulse 2.4s ease-in-out infinite;
+  opacity: 0.6;
+  animation: arrow-pulse 2.6s ease-in-out 0.6s infinite;
 }
 @keyframes arrow-pulse {
   0%,
@@ -339,7 +382,7 @@ body {
     opacity: 0.6;
   }
   50% {
-    opacity: 0.22;
+    opacity: 0.35;
   }
 }
 
