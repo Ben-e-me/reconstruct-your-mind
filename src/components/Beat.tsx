@@ -1,8 +1,17 @@
 import { motion } from 'framer-motion'
 import type { Beat as BeatT } from '../lib/parseStory'
+import { EASE, ELLIPSIS_DOT_STAGGER, LETTER_DUR, LETTER_RISE } from '../lib/anim'
 import { SplitText } from './SplitText'
 
-export function Beat({ beat, revealed }: { beat: BeatT; revealed: boolean }) {
+export function Beat({
+  beat,
+  revealed,
+  startAfter = 0,
+}: {
+  beat: BeatT
+  revealed: boolean
+  startAfter?: number
+}) {
   if (beat.type === 'divider') {
     return (
       <motion.div
@@ -17,16 +26,20 @@ export function Beat({ beat, revealed }: { beat: BeatT; revealed: boolean }) {
   }
 
   if (beat.type === 'ellipsis') {
-    // no extra click — the dots simply follow the text after a 2s pause
+    // three separate dots, text-appear style, starting only after the previous line finished
     return (
       <div className={`beat ellipsis place-${beat.placement}`}>
         {[0, 1, 2].map((i) => (
           <motion.span
             key={i}
             className="dot"
-            initial={{ opacity: 0, y: '0.3em' }}
-            animate={revealed ? { opacity: 0.4, y: 0 } : { opacity: 0, y: '0.3em' }}
-            transition={{ duration: 1.2, ease: 'easeOut', delay: revealed ? 2 + i * 0.6 : 0 }}
+            initial={{ opacity: 0, y: LETTER_RISE }}
+            animate={revealed ? { opacity: 0.4, y: 0 } : { opacity: 0, y: LETTER_RISE }}
+            transition={{
+              duration: LETTER_DUR,
+              ease: EASE,
+              delay: revealed ? startAfter + i * ELLIPSIS_DOT_STAGGER : 0,
+            }}
           >
             .
           </motion.span>

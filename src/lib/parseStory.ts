@@ -28,11 +28,13 @@ const isDivider = (t: string) => t === '—' || t === '--'
 
 // Inline markup + auto-italic quotes -> per-word tokens (classes carried onto each word).
 const MARK =
-  /(\*\*[^*]+\*\*|\*[^*]+\*|~[^~]+~|\[[^\]]+\]\{[A-Za-z0-9_-]+\}|“[^”]+”|"[^"]+")/g
+  /(\*\*[^*]+\*\*|\*[^*]+\*|__[^_]+__|_[^_]+_|~[^~]+~|\[[^\]]+\]\{[A-Za-z0-9_-]+\}|“[^”]+”|"[^"]+")/g
 
 function classifySegment(seg: string): { text: string; classes: string[] } {
   if (/^\*\*[^*]+\*\*$/.test(seg)) return { text: seg.slice(2, -2), classes: ['gradient', 'impact'] }
   if (/^\*[^*]+\*$/.test(seg)) return { text: seg.slice(1, -1), classes: ['gradient'] }
+  if (/^__[^_]+__$/.test(seg)) return { text: seg.slice(2, -2), classes: ['bold'] }
+  if (/^_[^_]+_$/.test(seg)) return { text: seg.slice(1, -1), classes: ['light'] }
   if (/^~[^~]+~$/.test(seg)) return { text: seg.slice(1, -1), classes: ['soft'] }
   const custom = seg.match(/^\[([^\]]+)\]\{([A-Za-z0-9_-]+)\}$/)
   if (custom) return { text: custom[1], classes: [custom[2]] }
@@ -46,7 +48,8 @@ function tokenize(raw: string): Word[] {
   const stream: { text: string; classes: string[]; isSpace: boolean }[] = []
   for (const part of parts) {
     const { text, classes } = classifySegment(part)
-    for (const piece of text.split(/(\s+)/)) {
+    // inline ellipsis -> three separate dots so each animates on its own
+    for (const piece of text.replace(/…/g, '...').split(/(\s+)/)) {
       if (piece === '') continue
       stream.push({ text: piece, classes, isSpace: /^\s+$/.test(piece) })
     }

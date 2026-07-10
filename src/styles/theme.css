@@ -14,7 +14,10 @@
   --beat-size: clamp(2.4rem, 6.3vw, 3.9rem);
   --title-size: clamp(3.3rem, 9vw, 5.4rem);
   --line: 1.26;
-  --measure: 24ch;
+  --measure: 27.6ch; /* +15% */
+
+  /* vertical rhythm between separately-revealed parts (stack/grid), doubled */
+  --group-gap: 1.1em;
 
   /* optical center, nudged 5% lower */
   --anchor: 45vh;

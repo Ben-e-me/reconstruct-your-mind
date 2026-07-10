@@ -29,8 +29,7 @@ body {
   user-select: none;
 }
 
-/* scene centered as a whole group on the optical center; all beats stay
-   mounted (revealed via opacity) so nothing repositions. */
+/* reading scene: whole group centered on the optical center, nothing repositions */
 .scene {
   position: absolute;
   top: var(--anchor);
@@ -43,16 +42,20 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.55em;
+  gap: var(--group-gap);
 }
 
+/* grid: {left}/{right} sit as a centered pair with a gap = the vertical rhythm */
 .scene.grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  column-gap: 2.5em;
-  row-gap: 0.55em;
-  width: min(94vw, 54rem);
+  grid-template-columns: auto auto;
+  grid-auto-flow: row dense;
+  justify-content: center;
   align-items: baseline;
+  column-gap: var(--group-gap);
+  row-gap: var(--group-gap);
+  width: auto;
+  max-width: 92vw;
 }
 
 .beat {
@@ -71,23 +74,26 @@ body {
   grid-column: 1 / -1;
   text-align: center;
   max-width: none;
-  margin-bottom: 0.35em;
 }
 .scene.grid .place-left {
   grid-column: 1;
-  justify-self: start;
-  text-align: left;
+  justify-self: end;
+  text-align: right;
+  white-space: nowrap;
+  max-width: none;
 }
 .scene.grid .place-right {
   grid-column: 2;
-  justify-self: end;
-  text-align: right;
+  justify-self: start;
+  text-align: left;
+  white-space: nowrap;
+  max-width: none;
 }
 
 .title {
   font-size: var(--title-size);
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.04em; /* # marker: looser tracking */
   max-width: 18ch;
 }
 
@@ -104,45 +110,54 @@ body {
 .quote {
   font-style: italic;
 }
-/* ** = same gradient look as *, only heavier */
 .impact {
   font-weight: 800;
+}
+.bold {
+  font-weight: 700;
+}
+.light {
+  font-weight: 300;
 }
 .soft {
   opacity: 0.5;
 }
-/* gradient must sit on the split letters (inline-block breaks text-clip inheritance) */
-.gradient .letter,
-.gradient.letter {
-  background: linear-gradient(
-    90deg,
-    var(--grad-1),
-    var(--grad-2),
-    var(--grad-3),
-    var(--grad-2),
-    var(--grad-1)
-  );
-  background-size: 200% auto;
+
+/* gradient: continuous sweep across the whole word (size/position set per letter in JS) */
+.gradient .letter {
+  background-image: linear-gradient(90deg, var(--grad-1), var(--grad-2), var(--grad-3));
+  background-repeat: no-repeat;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
-  animation: gradient-shift 5s ease infinite;
 }
-@keyframes gradient-shift {
-  to {
-    background-position: 200% center;
-  }
+
+/* organic-beat: magic rings behind the word */
+.organic-beat .letter {
+  position: relative;
+  z-index: 1;
+}
+.magic-rings {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 6em;
+  height: 7em;
+  pointer-events: none;
+  z-index: 0;
+  filter: blur(7px);
 }
 
 /* standalone ellipsis — large, quiet, close under the last line */
 .ellipsis {
   display: flex;
   justify-content: center;
-  gap: 0.224em;
-  font-size: calc(var(--beat-size) * 4.5);
+  gap: 0.112em;
+  font-size: calc(var(--beat-size) * 3.6);
   line-height: 0.4;
-  margin-top: calc(var(--beat-size) * 0.36);
+  margin-top: calc(var(--beat-size) * 0.24);
 }
 .ellipsis .dot {
   display: inline-block;
@@ -163,17 +178,29 @@ body {
 }
 
 /* title screen */
+.title-phase {
+  position: fixed;
+  inset: 0;
+}
 .title-screen {
+  position: absolute;
+  inset: 0;
+}
+.ts-head {
+  position: absolute;
+  top: var(--anchor);
+  left: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: calc(var(--beat-size) * 0.5);
+  gap: calc(var(--beat-size) * 0.7); /* title -> subline, +40% */
 }
 .ts-title {
   font-size: var(--ts-title-size);
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: 0.05em; /* +50% tracking */
   line-height: 1.05;
   white-space: nowrap;
 }
@@ -190,7 +217,9 @@ body {
   opacity: 0.7;
 }
 .press {
-  margin-top: calc(var(--beat-size) * 0.8);
+  position: fixed;
+  left: 50%;
+  transform: translate(-50%, -50%);
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-size: var(--ts-press-size);
@@ -240,7 +269,7 @@ body {
   cursor: default;
 }
 
-/* top-centered buttons: RESTART | LIGHT/DARK */
+/* top-centered buttons: RESTART | LIGHT MODE / DARK MODE */
 .topbar {
   position: fixed;
   top: 1.5rem;
@@ -260,10 +289,10 @@ body {
   font-size: 0.72rem;
 }
 
-/* side arrows as keyboard-key-style caps */
+/* side arrows as keyboard-key caps, aligned to the optical center */
 .arrow {
   position: fixed;
-  top: 50%;
+  top: var(--anchor);
   transform: translateY(-50%);
   width: 2.4rem;
   height: 2.4rem;
@@ -272,11 +301,17 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.1rem;
-  opacity: 0.4;
+  background: none;
+  color: var(--fg);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: auto;
+  transition: opacity 0.6s ease;
 }
-.arrow:hover {
-  opacity: 0.9;
+.arrow-glyph {
+  display: block;
+  line-height: 1;
+  font-size: 1.1rem;
 }
 .arrow-left {
   left: 1.6rem;
@@ -284,8 +319,31 @@ body {
 .arrow-right {
   right: 1.6rem;
 }
+.arrow.show {
+  opacity: 0.4;
+}
+.arrow:hover {
+  opacity: 0.9;
+}
+.arrow:disabled {
+  opacity: 0 !important;
+  pointer-events: none;
+  cursor: default;
+}
+.arrow-right.ready {
+  animation: arrow-pulse 2.4s ease-in-out infinite;
+}
+@keyframes arrow-pulse {
+  0%,
+  100% {
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 0.22;
+  }
+}
 
-/* progress: one small dot per step */
+/* progress: one dot per step — active/passed dots twice the size of inactive */
 .progress {
   position: fixed;
   left: 24px;
@@ -299,7 +357,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 10px;
+  height: 12px;
 }
 .step::after {
   content: '';
@@ -308,8 +366,10 @@ body {
   border-radius: 50%;
   background: var(--fg);
   opacity: 0.12;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.4s ease, width 0.4s ease, height 0.4s ease;
 }
 .step.done::after {
+  width: 6px;
+  height: 6px;
   opacity: 0.5;
 }

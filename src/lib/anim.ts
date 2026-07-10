@@ -4,8 +4,10 @@ export const EASE = [0.22, 0.61, 0.36, 1] as const
 export const LETTER_STAGGER = 0.045
 export const LETTER_DUR = 0.6
 export const BLUR_DUR = 0.75
-export const COMMA_PAUSE = 0.4 // extra pause after a comma, natural speech rhythm
+export const COMMA_PAUSE = 0.48 // extra pause after a comma (+20%)
 export const LETTER_RISE = '0.32em' // vertical travel per letter (no bounce)
+export const ELLIPSIS_PAUSE = 0.7 // pause after the previous line before the ellipsis
+export const ELLIPSIS_DOT_STAGGER = 0.22 // per-dot delay for standalone ellipses
 
 export interface Segment {
   text: string
@@ -25,4 +27,19 @@ export function toWords(str: string): Segment[] {
       }
       return acc
     }, [])
+}
+
+// time until the last letter of a set of words has finished animating in
+export function revealDuration(words: Segment[]): number {
+  let letters = 0
+  let commas = 0
+  for (const w of words) {
+    for (const ch of Array.from(w.text.replace(/…/g, '...'))) {
+      if (/\s/.test(ch)) continue
+      letters++
+      if (ch === ',') commas++
+    }
+  }
+  if (letters === 0) return 0
+  return (letters - 1) * LETTER_STAGGER + commas * COMMA_PAUSE + LETTER_DUR
 }

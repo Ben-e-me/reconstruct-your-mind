@@ -5,7 +5,7 @@ import { parseStory } from '../lib/parseStory'
 import { useReader } from '../hooks/useReader'
 import { useIdleUI } from '../hooks/useIdleUI'
 import { useTheme } from '../hooks/useTheme'
-import { BLUR_DUR } from '../lib/anim'
+import { BLUR_DUR, ELLIPSIS_PAUSE, ELLIPSIS_DOT_STAGGER, LETTER_DUR, revealDuration } from '../lib/anim'
 import { Beat } from './Beat'
 import { Controls } from './Controls'
 import { TitleScreen } from './TitleScreen'
@@ -16,6 +16,7 @@ export function Reader() {
   const uiActive = useIdleUI(2000)
   const { theme, toggle } = useTheme()
   const [phase, setPhase] = useState<'title' | 'reading'>('title')
+  const [beatDone, setBeatDone] = useState(false)
 
   const start = useCallback(() => {
     restart()
@@ -39,6 +40,21 @@ export function Reader() {
     return () => window.removeEventListener('keydown', onKey)
   }, [phase, start])
 
+  // when the current step's animation is fully done, nudge the forward arrow
+  useEffect(() => {
+    setBeatDone(false)
+    if (phase !== 'reading' || !scene) return
+    const cur = scene.beats[revealedLocalIndex]
+    if (!cur) return
+    let finish = cur.type === 'ellipsis' ? 0 : revealDuration(cur.words)
+    const nextBeat = scene.beats[revealedLocalIndex + 1]
+    if (nextBeat?.type === 'ellipsis') {
+      finish = revealDuration(cur.words) + ELLIPSIS_PAUSE + 2 * ELLIPSIS_DOT_STAGGER + LETTER_DUR
+    }
+    const timer = window.setTimeout(() => setBeatDone(true), (finish + 0.3) * 1000)
+    return () => window.clearTimeout(timer)
+  }, [phase, scene, revealedLocalIndex])
+
   const stop = (fn: () => void) => (e: MouseEvent) => {
     e.stopPropagation()
     fn()
@@ -52,7 +68,7 @@ export function Reader() {
         {phase === 'title' ? (
           <motion.div
             key="title"
-            className="scene title-phase"
+            className="title-phase"
             initial={{ opacity: 1, filter: 'blur(0px)' }}
             animate={{ opacity: 1, filter: 'blur(0px)' }}
             exit={{ opacity: 0, filter: 'blur(12px)' }}
@@ -71,7 +87,9 @@ export function Reader() {
           >
             {scene?.beats.map((b, i) => {
               const revealed = i <= revealedLocalIndex || (b.type === 'ellipsis' && i - 1 <= revealedLocalIndex)
-              return <Beat key={b.id} beat={b} revealed={revealed} />
+              const startAfter =
+                b.type === 'ellipsis' && i > 0 ? revealDuration(scene.beats[i - 1].words) + ELLIPSIS_PAUSE : 0
+              return <Beat key={b.id} beat={b} revealed={revealed} startAfter={startAfter} />
             })}
           </motion.section>
         )}
@@ -79,6 +97,7 @@ export function Reader() {
 
       <Controls
         visible={uiActive}
+        showNav={phase === 'reading'}
         theme={theme}
         onToggleTheme={stop(toggle)}
         onRestart={stop(toTitle)}
@@ -86,6 +105,7 @@ export function Reader() {
         onNext={stop(next)}
         atStart={phase === 'title' || atStart}
         atEnd={phase === 'reading' && atEnd}
+        ready={phase === 'reading' && beatDone && !atEnd}
         pos={phase === 'title' ? -1 : pos}
         total={total}
       />
