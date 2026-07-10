@@ -1,0 +1,16 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "reconstruct-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "/Users/hova/02 WORK/Own Business/BACKED UP/Claude/BRAIN-OS/projects/reconstruct-your-mind/app",
+        "run",
+        "dev"
+      ],
+      "port": 5173
+    }
+  ]
+}

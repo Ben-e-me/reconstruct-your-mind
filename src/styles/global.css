@@ -1,0 +1,315 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+.stage {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* scene centered as a whole group on the optical center; all beats stay
+   mounted (revealed via opacity) so nothing repositions. */
+.scene {
+  position: absolute;
+  top: var(--anchor);
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(92vw, 46rem);
+}
+
+.scene.stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55em;
+}
+
+.scene.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 2.5em;
+  row-gap: 0.55em;
+  width: min(94vw, 54rem);
+  align-items: baseline;
+}
+
+.beat {
+  font-size: var(--beat-size);
+  line-height: var(--line);
+  letter-spacing: -0.01em;
+  max-width: var(--measure);
+  text-wrap: balance;
+}
+
+.scene.stack .beat {
+  text-align: center;
+}
+
+.scene.grid .place-center {
+  grid-column: 1 / -1;
+  text-align: center;
+  max-width: none;
+  margin-bottom: 0.35em;
+}
+.scene.grid .place-left {
+  grid-column: 1;
+  justify-self: start;
+  text-align: left;
+}
+.scene.grid .place-right {
+  grid-column: 2;
+  justify-self: end;
+  text-align: right;
+}
+
+.title {
+  font-size: var(--title-size);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  max-width: 18ch;
+}
+
+/* split-text units */
+.word {
+  display: inline-block;
+}
+.letter {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+/* inline emphasis */
+.quote {
+  font-style: italic;
+}
+/* ** = same gradient look as *, only heavier */
+.impact {
+  font-weight: 800;
+}
+.soft {
+  opacity: 0.5;
+}
+/* gradient must sit on the split letters (inline-block breaks text-clip inheritance) */
+.gradient .letter,
+.gradient.letter {
+  background: linear-gradient(
+    90deg,
+    var(--grad-1),
+    var(--grad-2),
+    var(--grad-3),
+    var(--grad-2),
+    var(--grad-1)
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-shift 5s ease infinite;
+}
+@keyframes gradient-shift {
+  to {
+    background-position: 200% center;
+  }
+}
+
+/* standalone ellipsis — large, quiet, close under the last line */
+.ellipsis {
+  display: flex;
+  justify-content: center;
+  gap: 0.224em;
+  font-size: calc(var(--beat-size) * 4.5);
+  line-height: 0.4;
+  margin-top: calc(var(--beat-size) * 0.36);
+}
+.ellipsis .dot {
+  display: inline-block;
+  line-height: 1;
+}
+
+.divider {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+.divider-rule {
+  display: block;
+  width: 3rem;
+  height: 1px;
+  background: var(--fg);
+  opacity: 0.35;
+}
+
+/* title screen */
+.title-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: calc(var(--beat-size) * 0.5);
+}
+.ts-title {
+  font-size: var(--ts-title-size);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+  white-space: nowrap;
+}
+.ts-credits {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: clamp(1.5rem, 6vw, 4rem);
+}
+.ts-credit {
+  font-size: var(--ts-credit-size);
+  font-weight: 360;
+  letter-spacing: 0.03em;
+  opacity: 0.7;
+}
+.press {
+  margin-top: calc(var(--beat-size) * 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: var(--ts-press-size);
+  font-weight: 320;
+  opacity: 0.3;
+  animation: pulse 2.6s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 0.1;
+  }
+}
+
+/* subtle interface — only shown on mouse movement */
+.controls {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  transition: opacity 600ms ease;
+}
+.controls.show {
+  opacity: 1;
+}
+.controls.hide {
+  opacity: 0;
+}
+
+.ctrl {
+  pointer-events: auto;
+  font-family: var(--font);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--fg);
+  opacity: 0.5;
+  transition: opacity 200ms ease;
+}
+.ctrl:hover {
+  opacity: 1;
+}
+.ctrl:disabled {
+  opacity: 0.12;
+  cursor: default;
+}
+
+/* top-centered buttons: RESTART | LIGHT/DARK */
+.topbar {
+  position: fixed;
+  top: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.label {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-size: 0.72rem;
+}
+.sep {
+  opacity: 0.3;
+  font-size: 0.72rem;
+}
+
+/* side arrows as keyboard-key-style caps */
+.arrow {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2.4rem;
+  height: 2.4rem;
+  border: 1.5px solid var(--fg);
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  opacity: 0.4;
+}
+.arrow:hover {
+  opacity: 0.9;
+}
+.arrow-left {
+  left: 1.6rem;
+}
+.arrow-right {
+  right: 1.6rem;
+}
+
+/* progress: one small dot per step */
+.progress {
+  position: fixed;
+  left: 24px;
+  right: 24px;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+}
+.step {
+  flex: 1 1 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 10px;
+}
+.step::after {
+  content: '';
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--fg);
+  opacity: 0.12;
+  transition: opacity 0.4s ease;
+}
+.step.done::after {
+  opacity: 0.5;
+}

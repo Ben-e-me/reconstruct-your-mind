@@ -1,0 +1,31 @@
+:root {
+  /* dark by default */
+  --bg: #1d1b1a;
+  --fg: #eae6e1;
+
+  /* warm rust gradient for color highlights (pastel-leaning, still saturated) */
+  --grad-1: #e8b08a;
+  --grad-2: #d67d4a;
+  --grad-3: #b5533a;
+
+  --font: 'Merriweather', Georgia, 'Times New Roman', serif;
+
+  /* base sizes already scaled +50% */
+  --beat-size: clamp(2.4rem, 6.3vw, 3.9rem);
+  --title-size: clamp(3.3rem, 9vw, 5.4rem);
+  --line: 1.26;
+  --measure: 24ch;
+
+  /* optical center, nudged 5% lower */
+  --anchor: 45vh;
+
+  /* title screen */
+  --ts-title-size: calc(var(--beat-size) * 1.32);
+  --ts-credit-size: calc(var(--beat-size) * 0.3);
+  --ts-press-size: calc(var(--beat-size) * 0.4);
+}
+
+:root[data-theme='light'] {
+  --bg: #eae6e1;
+  --fg: #1d1b1a;
+}

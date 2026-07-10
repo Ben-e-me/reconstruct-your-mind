@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Reconstruct Your Mind — Markup Reference</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Merriweather:ital,opsz,wght@0,18..144,300..900;1,18..144,300..900&family=JetBrains+Mono:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #eae6e1;
+        --fg: #1d1b1a;
+        --muted: #8a827a;
+        --line: rgba(29, 27, 26, 0.12);
+        --code-bg: rgba(29, 27, 26, 0.05);
+        --grad-1: #e8b08a;
+        --grad-2: #d67d4a;
+        --grad-3: #b5533a;
+        --serif: 'Merriweather', Georgia, serif;
+        --mono: 'JetBrains Mono', ui-monospace, Menlo, monospace;
+      }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        background: var(--bg);
+        color: var(--fg);
+        font-family: var(--serif);
+        line-height: 1.5;
+        padding: 5vw 6vw 8vw;
+        -webkit-font-smoothing: antialiased;
+      }
+      .wrap { max-width: 60rem; margin: 0 auto; }
+      header { margin-bottom: 3.5rem; }
+      h1 { font-size: 2.4rem; font-weight: 700; letter-spacing: -0.02em; }
+      .sub { color: var(--muted); font-style: italic; margin-top: 0.4rem; font-size: 1.05rem; }
+      .intro { margin: 1.6rem 0 0; max-width: 42rem; color: var(--fg); }
+
+      section.group { margin-top: 3rem; }
+      h2 {
+        font-family: var(--mono);
+        text-transform: uppercase;
+        letter-spacing: 0.14em;
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--muted);
+        border-bottom: 1px solid var(--line);
+        padding-bottom: 0.6rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1.5rem;
+        align-items: center;
+        padding: 1.4rem 0;
+        border-bottom: 1px solid var(--line);
+      }
+      @media (max-width: 640px) { .row { grid-template-columns: 1fr; gap: 0.9rem; } }
+
+      .code {
+        font-family: var(--mono);
+        font-size: 0.82rem;
+        line-height: 1.7;
+        background: var(--code-bg);
+        border-radius: 10px;
+        padding: 0.9rem 1rem;
+        white-space: pre-wrap;
+        color: var(--fg);
+      }
+      .code .tok { color: var(--grad-3); font-weight: 600; }
+      .desc { font-family: var(--mono); font-size: 0.68rem; color: var(--muted); margin-top: 0.5rem; letter-spacing: 0.03em; }
+
+      .demo { font-size: 1.5rem; line-height: 1.35; }
+      .demo.small { font-size: 1.25rem; }
+      .demo .center { text-align: center; }
+
+      /* effect styles — mirror the app */
+      .gradient {
+        background: linear-gradient(90deg, var(--grad-1), var(--grad-2), var(--grad-3), var(--grad-2), var(--grad-1));
+        background-size: 200% auto;
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        -webkit-text-fill-color: transparent;
+        animation: grad 5s ease infinite;
+      }
+      @keyframes grad { to { background-position: 200% center; } }
+      .impact { font-size: 1.15em; font-weight: 700; }
+      .soft { opacity: 0.5; }
+      .quote { font-style: italic; }
+      .title-demo { font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; }
+
+      .ellipsis { display: flex; gap: 0.5em; font-size: 2rem; opacity: 1; margin-top: 0.6rem; }
+      .ellipsis .dot { opacity: 0.5; }
+
+      .divider-demo { width: 3rem; height: 1px; background: var(--fg); opacity: 0.35; }
+
+      .grid-demo { display: grid; grid-template-columns: 1fr 1fr; column-gap: 1.5rem; row-gap: 0.4rem; }
+      .grid-demo .full { grid-column: 1 / -1; text-align: center; margin-bottom: 0.2rem; }
+      .grid-demo .l { text-align: left; }
+      .grid-demo .r { text-align: right; }
+      .stack-demo { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; }
+
+      /* looping split-in / blur-out demo */
+      .anim { display: inline-block; }
+      .anim .w { display: inline-block; opacity: 0; }
+      .replay {
+        font-family: var(--mono); font-size: 0.68rem; letter-spacing: 0.06em;
+        background: none; border: 1px solid var(--line); border-radius: 999px;
+        padding: 0.35rem 0.8rem; color: var(--muted); cursor: pointer; margin-top: 0.7rem;
+      }
+      .replay:hover { color: var(--fg); border-color: var(--muted); }
+
+      footer { margin-top: 4rem; color: var(--muted); font-size: 0.8rem; font-family: var(--mono); }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>Markup Reference</h1>
+        <p class="sub">reconstruct your mind — story.txt authoring</p>
+        <p class="intro">
+          The whole experience is written in one plain-text file: <b>story.txt</b>. A blank line
+          starts a new beat. Below: every marker in monospace on the left, the resulting effect on
+          the right. Values (timing, colors) are still experimental and live in the app's config.
+        </p>
+      </header>
+
+      <section class="group">
+        <h2>Structure</h2>
+
+        <div class="row">
+          <div>
+            <div class="code">A single thought.
+
+Another thought.</div>
+            <div class="desc">blank line = new beat · each replaces the last (page change)</div>
+          </div>
+          <div class="demo">
+            <div class="anim" data-anim="split">A single thought.</div>
+            <button class="replay">▷ replay appear + blur-out</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="code"><span class="tok">#</span> The Permission to Choose Yourself</div>
+            <div class="desc"># at line start = title beat</div>
+          </div>
+          <div class="demo"><span class="title-demo">The Permission to Choose Yourself</span></div>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="code">Simply notice.
+
+<span class="tok">…</span></div>
+            <div class="desc">… alone on a line = a pause. Appears BELOW the previous text, larger, at 50% opacity, one dot at a time, slowly.</div>
+          </div>
+          <div class="demo small">
+            Simply notice.
+            <div class="ellipsis"><span class="dot">.</span><span class="dot">.</span><span class="dot">.</span></div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="code"><span class="tok">—</span></div>
+            <div class="desc">— alone on a line = section divider</div>
+          </div>
+          <div class="demo"><span class="divider-demo" style="display:block"></span></div>
+        </div>
+      </section>
+
+      <section class="group">
+        <h2>Emphasis (inline)</h2>
+
+        <div class="row">
+          <div>
+            <div class="code">stop asking for <span class="tok">*</span>permission<span class="tok">*</span>.</div>
+            <div class="desc">*word* = color highlight · animated warm rust gradient</div>
+          </div>
+          <div class="demo">stop asking for <span class="gradient">permission</span>.</div>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="code">Not someday. <span class="tok">**</span>Tomorrow.<span class="tok">**</span></div>
+            <div class="desc">**word** = impact · scaled up + heavier</div>
+          </div>
+          <div class="demo">Not someday. <span class="impact">Tomorrow.</span></div>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="code">A belief that says<span class="tok">~</span>…<span class="tok">~</span></div>
+            <div class="desc">~word~ = soft · quieted / dimmed</div>
+          </div>
+          <div class="demo">A belief that says<span class="soft">…</span></div>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="code"><span class="tok">"</span>I should be who other people need me to be.<span class="tok">"</span></div>
+            <div class="desc">"double quotes" = italic automatically (no marker needed)</div>
+          </div>
+          <div class="demo small"><span class="quote">"I should be who other people need me to be."</span></div>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="code">a <span class="tok">[</span>custom<span class="tok">]{</span>myclass<span class="tok">}</span> word</div>
+            <div class="desc">[text]{class} = escape hatch · wraps text in a span with your class (add a CSS rule)</div>
+          </div>
+          <div class="demo">for future special cases</div>
+        </div>
+      </section>
+
+      <section class="group">
+        <h2>Groups &amp; Layout</h2>
+
+        <div class="row">
+          <div>
+            <div class="code"><span class="tok">::: stack</span>
+Accepted.
+Praised.
+Safe.
+Loved.
+<span class="tok">:::</span></div>
+            <div class="desc">::: stack = a "sinngruppe" · each line is its own beat, revealed one click at a time, stacking downward. Nothing already shown ever moves.</div>
+          </div>
+          <div class="demo small stack-demo">
+            <div>Accepted.</div><div>Praised.</div><div>Safe.</div><div>Loved.</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="code"><span class="tok">::: grid</span>
+Rules like…
+<span class="tok">{left}</span> "Don't disappoint people."
+<span class="tok">{right}</span> "Be easy to love."
+<span class="tok">{left}</span> "Don't be too much."
+<span class="tok">{right}</span> "Don't be selfish."
+<span class="tok">:::</span></div>
+            <div class="desc">::: grid = two columns · {left} and {right} sit on the SAME line as a pair. A line without a placement (Rules like…) spans both, centered.</div>
+          </div>
+          <div class="demo small grid-demo">
+            <div class="full">Rules like…</div>
+            <div class="l quote">"Don't disappoint people."</div>
+            <div class="r quote">"Be easy to love."</div>
+            <div class="l quote">"Don't be too much."</div>
+            <div class="r quote">"Don't be selfish."</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <div class="code"><span class="tok">{left}</span> / <span class="tok">{right}</span> / <span class="tok">{center}</span></div>
+            <div class="desc">placement token at the start of a line · mainly for grid columns (center is the default)</div>
+          </div>
+          <div class="demo small">
+            <div style="text-align:left">left</div>
+            <div style="text-align:center">center</div>
+            <div style="text-align:right">right</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="group">
+        <h2>Motion</h2>
+        <div class="row">
+          <div>
+            <div class="desc" style="margin-top:0">appear</div>
+            <p style="font-size:0.95rem">Words rise and fade in one after another (split-text), ~60ms apart.</p>
+          </div>
+          <div>
+            <div class="desc" style="margin-top:0">page change</div>
+            <p style="font-size:0.95rem">The whole beat blurs and fades out before the next appears (blur-text).</p>
+          </div>
+        </div>
+        <div class="row">
+          <div>
+            <div class="desc" style="margin-top:0">highlights</div>
+            <p style="font-size:0.95rem">*gradient* words shimmer slowly through warm rust tones.</p>
+          </div>
+          <div>
+            <div class="desc" style="margin-top:0">pause</div>
+            <p style="font-size:0.95rem">Standalone … reveals dot-by-dot, slowly, as a moment to rest.</p>
+          </div>
+        </div>
+      </section>
+
+      <footer>reconstruct your mind · edit story.txt · effects tunable in app/src</footer>
+    </div>
+
+    <script>
+      const EASE = 'cubic-bezier(0.22,0.61,0.36,1)'
+      function splitInto(el) {
+        const text = el.textContent
+        el.textContent = ''
+        const words = text.split(/(\s+)/)
+        const spans = []
+        for (const w of words) {
+          if (/^\s+$/.test(w)) { el.appendChild(document.createTextNode(w)); continue }
+          const s = document.createElement('span')
+          s.className = 'w'; s.textContent = w
+          el.appendChild(s); spans.push(s)
+        }
+        return spans
+      }
+      function play(el) {
+        const spans = el.__spans || (el.__spans = splitInto(el))
+        spans.forEach((s) => { s.style.transition = 'none'; s.style.opacity = '0'; s.style.transform = 'translateY(0.5em) blur(0)'; s.style.filter = 'blur(0px)' })
+        void el.offsetWidth
+        spans.forEach((s, i) => {
+          s.style.transition = `opacity 0.5s ${EASE} ${i * 0.06}s, transform 0.5s ${EASE} ${i * 0.06}s`
+          s.style.opacity = '1'; s.style.transform = 'translateY(0)'
+        })
+        const total = spans.length * 0.06 + 0.5
+        setTimeout(() => {
+          spans.forEach((s, i) => {
+            s.style.transition = `opacity 0.5s ease ${i * 0.05}s, filter 0.5s ease ${i * 0.05}s`
+            s.style.opacity = '0'; s.style.filter = 'blur(10px)'
+          })
+        }, (total + 1.2) * 1000)
+      }
+      document.querySelectorAll('[data-anim="split"]').forEach((el) => {
+        play(el)
+        const btn = el.parentElement.querySelector('.replay')
+        if (btn) btn.addEventListener('click', () => play(el))
+      })
+    </script>
+  </body>
+</html>
