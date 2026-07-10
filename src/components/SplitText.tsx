@@ -1,7 +1,9 @@
-import { Fragment, type CSSProperties, type ReactNode } from 'react'
+import { Fragment, Suspense, lazy, type CSSProperties, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
 import { COMMA_PAUSE, EASE, LETTER_DUR, LETTER_RISE, LETTER_STAGGER, type Segment } from '../lib/anim'
-import { MagicRings } from './MagicRings'
+
+// three.js is heavy — only load it when an organic-beat actually renders
+const MagicRings = lazy(() => import('./MagicRings').then((m) => ({ default: m.MagicRings })))
 
 type As = 'p' | 'h1' | 'span' | 'div'
 
@@ -34,9 +36,11 @@ export function SplitText({ words, animate, as = 'span', className = '', baseDel
             if (ch === ',') commaExtra += COMMA_PAUSE
             let style: CSSProperties | undefined
             if (isGradient) {
+              const slice = n > 1 ? `${(ci / (n - 1)) * 100}%` : '50%'
               style = {
                 backgroundSize: `${n * 100}% 100%`,
-                backgroundPositionX: n > 1 ? `${(ci / (n - 1)) * 100}%` : '50%',
+                // static per-letter slice + a time-based pulse (see .gradient .letter)
+                backgroundPositionX: `calc(${slice} + var(--grad-shift, 0%))`,
               }
             }
             return (
@@ -71,7 +75,9 @@ export function SplitText({ words, animate, as = 'span', className = '', baseDel
       }
       nodes.push(
         <span key={`organic-${startKey}`} className="organic-group">
-          <MagicRings />
+          <Suspense fallback={null}>
+            <MagicRings />
+          </Suspense>
           {run.map((rw, ri) => renderWord(rw, startKey * 1000 + ri))}
         </span>,
       )
@@ -82,7 +88,7 @@ export function SplitText({ words, animate, as = 'span', className = '', baseDel
   }
 
   return (
-    <Tag className={className} style={{ opacity: dimmed ? 0.65 : 1, transition: 'opacity 0.6s ease' }}>
+    <Tag className={className} style={{ opacity: dimmed ? 0.4 : 1, transition: 'opacity 0.6s ease' }}>
       {nodes}
     </Tag>
   )

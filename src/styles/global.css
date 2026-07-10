@@ -110,7 +110,7 @@ body {
   font-weight: 800;
 }
 .bold {
-  font-weight: 805;
+  font-weight: 900;
 }
 .light {
   font-weight: 300; /* Merriweather variable bottoms out at 300 */
@@ -120,6 +120,11 @@ body {
 }
 
 /* gradient: continuous sweep across the whole word (size/position set per letter in JS) */
+@property --grad-shift {
+  syntax: '<percentage>';
+  inherits: false;
+  initial-value: 0%;
+}
 .gradient .letter {
   background-image: linear-gradient(90deg, var(--grad-1), var(--grad-2), var(--grad-3));
   background-repeat: no-repeat;
@@ -127,6 +132,16 @@ body {
   background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
+  animation: grad-pulse 6s ease-in-out infinite;
+}
+@keyframes grad-pulse {
+  0%,
+  100% {
+    --grad-shift: 0%;
+  }
+  50% {
+    --grad-shift: 55%;
+  }
 }
 
 /* organic-beat: one subtle liquid rust glow centered behind the whole phrase */
@@ -137,37 +152,21 @@ body {
   position: relative;
   z-index: 1;
 }
+/* WebGL shader canvas (see MagicRings.tsx) */
 .magic-rings {
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -50%);
-  width: 8em;
-  height: 5.5em;
+  width: 12em;
+  height: 9em;
   pointer-events: none;
   z-index: 0;
 }
-.magic-rings::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: radial-gradient(ellipse 58% 70% at 50% 50%, transparent 42%, var(--grad-2) 54%, transparent 74%);
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 34%, transparent 66%, #000 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, transparent 34%, transparent 66%, #000 100%);
-  filter: blur(9px);
-  opacity: 0.5;
-  animation: rings-breathe 4.4s ease-in-out infinite;
-}
-@keyframes rings-breathe {
-  0%,
-  100% {
-    opacity: 0.12;
-    transform: scale(0.95);
-  }
-  50% {
-    opacity: 0.5;
-    transform: scale(1.05);
-  }
+.magic-rings canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 /* standalone ellipsis — large, quiet, close under the last line; dots pulse in sequence */
@@ -177,7 +176,7 @@ body {
   gap: 0.112em;
   font-size: calc(var(--beat-size) * 3.6);
   line-height: 0.4;
-  margin-top: calc(var(--beat-size) * 0.168);
+  margin-top: calc(var(--beat-size) * 0.101);
 }
 .ellipsis .dot {
   display: inline-block;
@@ -196,16 +195,16 @@ body {
     opacity: 0;
   }
   to {
-    opacity: 0.6;
+    opacity: 0.42;
   }
 }
 @keyframes ellipsis-pulse {
   0%,
   100% {
-    opacity: 0.6;
+    opacity: 0.42;
   }
   50% {
-    opacity: 0.35;
+    opacity: 0.25;
   }
 }
 
@@ -265,12 +264,28 @@ body {
   position: fixed;
   left: 50%;
   transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-transform: uppercase;
   letter-spacing: 0.18em;
   font-size: var(--ts-press-size);
   font-weight: 320;
   opacity: 0.3;
   animation: pulse 2.6s ease-in-out infinite;
+}
+/* keyboard keycap under "press to start" — 80% of the arrow keycap, same pulse */
+.press-key {
+  margin-top: 1.1em;
+  width: 1.92rem;
+  height: 1.92rem;
+  border: 1.5px solid var(--fg);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  letter-spacing: 0;
 }
 @keyframes pulse {
   0%,
@@ -347,7 +362,7 @@ body {
   cursor: pointer;
   opacity: 0;
   pointer-events: auto;
-  transition: opacity 0.6s ease;
+  transition: opacity 0.9s ease; /* slow fade-out on key press */
 }
 .arrow-glyph {
   display: block;
@@ -371,18 +386,19 @@ body {
   pointer-events: none;
   cursor: default;
 }
-/* forward arrow, once the beat is done: fade in to 60%, then pulse 60% <-> 35% */
+/* forward arrow, once the beat is done: fade in (1.2s) to 40%, then pulse 40% <-> 20% */
 .arrow-right.ready {
-  opacity: 0.6;
-  animation: arrow-pulse 2.6s ease-in-out 0.6s infinite;
+  opacity: 0.4;
+  transition: opacity 1.2s ease;
+  animation: arrow-pulse 2.6s ease-in-out 1.2s infinite;
 }
 @keyframes arrow-pulse {
   0%,
   100% {
-    opacity: 0.6;
+    opacity: 0.4;
   }
   50% {
-    opacity: 0.35;
+    opacity: 0.2;
   }
 }
 
@@ -415,4 +431,53 @@ body {
   width: 6px;
   height: 6px;
   opacity: 0.5;
+}
+
+/* portrait: ask to rotate. landscape scales to fit, so the gate hides. */
+.orientation-gate {
+  display: none;
+}
+@media (orientation: portrait) {
+  .orientation-gate {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2.5rem;
+    background: var(--bg);
+    color: var(--fg);
+    padding: 8vw;
+    text-align: center;
+  }
+}
+.phone-rotate {
+  width: clamp(48px, 14vw, 88px);
+  height: auto;
+  color: var(--fg);
+  opacity: 0.85;
+  transform-origin: 50% 50%;
+  animation: phone-rotate 3.4s ease-in-out infinite;
+}
+@keyframes phone-rotate {
+  0%,
+  22% {
+    transform: rotate(0deg);
+  }
+  55%,
+  78% {
+    transform: rotate(-90deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+.orientation-text {
+  font-size: clamp(1.1rem, 5.5vw, 2rem);
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  max-width: 18ch;
+  opacity: 0.85;
 }

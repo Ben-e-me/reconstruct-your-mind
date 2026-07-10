@@ -10,8 +10,8 @@
 
   --font: 'Merriweather', Georgia, 'Times New Roman', serif;
 
-  /* base sizes already scaled +50% */
-  --beat-size: clamp(2.4rem, 6.3vw, 3.9rem);
+  /* base size scales with the smaller of width/height so landscape phones fit */
+  --beat-size: clamp(2rem, min(6.3vw, 8.5vh), 3.9rem);
   --title-size: clamp(3.3rem, 9vw, 5.4rem);
   --line: 1.26;
   /* text box width: only 3x the arrow-to-edge gap (1.6rem) between text and the arrows.
@@ -24,8 +24,8 @@
   /* optical center, nudged 5% lower */
   --anchor: 45vh;
 
-  /* title screen */
-  --ts-title-size: calc(var(--beat-size) * 1.32);
+  /* title screen — capped to viewport width so the one-line title never clips */
+  --ts-title-size: min(calc(var(--beat-size) * 1.32), 8.5vw);
   --ts-credit-size: calc(var(--beat-size) * 0.3);
   --ts-press-size: calc(var(--beat-size) * 0.4);
 }

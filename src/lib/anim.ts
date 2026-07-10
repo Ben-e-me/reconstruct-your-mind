@@ -8,7 +8,7 @@ export const COMMA_PAUSE = 0.48 // extra pause after a comma (+20%)
 export const LETTER_RISE = '0.32em' // vertical travel per letter (no bounce)
 export const ELLIPSIS_PAUSE = 0.35 // pause after the previous line before the ellipsis
 export const ELLIPSIS_DOT_STAGGER = 0.22 // per-dot delay for standalone ellipses
-export const ARROW_DELAY = 1.0 // wait after the beat finishes before the forward arrow appears
+export const ARROW_DELAY = 0 // forward arrow starts fading in right after the beat finishes
 
 export interface Segment {
   text: string

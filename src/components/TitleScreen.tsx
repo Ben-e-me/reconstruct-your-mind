@@ -45,6 +45,9 @@ export function TitleScreen() {
 
       <div className="press" style={pressTop != null ? { top: pressTop } : { display: 'none' }}>
         <SplitText words={toWords('Press to start')} animate="visible" className="ts-press-text" baseDelay={pressDelay} />
+        <span className="press-key" aria-hidden="true">
+          →
+        </span>
       </div>
     </div>
   )
