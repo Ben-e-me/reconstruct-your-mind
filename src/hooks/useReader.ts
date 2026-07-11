@@ -21,6 +21,7 @@ export function useReader(scenes: Scene[]) {
   const next = useCallback(() => setPos((p) => clamp(p + 1)), [clamp])
   const prev = useCallback(() => setPos((p) => clamp(p - 1)), [clamp])
   const restart = useCallback(() => setPos(0), [])
+  const goTo = useCallback((n: number) => setPos(() => clamp(n)), [clamp])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -48,6 +49,7 @@ export function useReader(scenes: Scene[]) {
     next,
     prev,
     restart,
+    goTo,
     pos,
     total,
     atStart: pos === 0,

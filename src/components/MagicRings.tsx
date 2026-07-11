@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as THREE from 'three'
 
 // Ported from ReactBits "Magic Rings" (Three.js WebGL shader), tuned to Beni's
@@ -17,7 +17,6 @@ uniform float uTime, uAttenuation, uLineThickness;
 uniform float uBaseRadius, uRadiusStep, uScaleRate;
 uniform float uOpacity, uNoiseAmount, uRotation, uRingGap;
 uniform float uFadeIn, uFadeOut;
-uniform float uParallax;
 uniform vec2 uResolution;
 uniform vec3 uColor, uColorTwo;
 uniform int uRingCount;
@@ -59,10 +58,9 @@ void main() {
 }
 `
 
-// Beni's tuned settings (rust)
 const P = {
-  color: '#e0a060',
-  colorTwo: '#b5533a',
+  color: '#d8823f',
+  colorTwo: '#b0492b',
   speed: 1.2,
   ringCount: 7,
   attenuation: 12,
@@ -70,20 +68,31 @@ const P = {
   baseRadius: 0.26,
   radiusStep: 0.08,
   scaleRate: 0.17,
-  opacity: 0.35,
-  blur: 10,
-  noiseAmount: 0.1,
+  opacity: 0.6,
+  blur: 8,
+  noiseAmount: 0.07,
   rotation: 90,
   ringGap: 1,
   fadeIn: 0.95,
   fadeOut: 0.5,
-  parallax: 0.075,
 }
 
-export function MagicRings() {
+// active = the beat is shown; delay = seconds to wait (until the text finished) before the rings begin
+export function MagicRings({ active = true, delay = 0 }: { active?: boolean; delay?: number }) {
   const mountRef = useRef<HTMLDivElement | null>(null)
+  const [started, setStarted] = useState(false)
 
   useEffect(() => {
+    if (!active) {
+      setStarted(false)
+      return
+    }
+    const t = window.setTimeout(() => setStarted(true), delay * 1000)
+    return () => window.clearTimeout(t)
+  }, [active, delay])
+
+  useEffect(() => {
+    if (!started) return
     const mount = mountRef.current
     if (!mount) return
 
@@ -122,7 +131,6 @@ export function MagicRings() {
       uRingGap: { value: P.ringGap },
       uFadeIn: { value: P.fadeIn },
       uFadeOut: { value: P.fadeOut },
-      uParallax: { value: P.parallax },
     }
 
     const material = new THREE.ShaderMaterial({ vertexShader, fragmentShader, uniforms, transparent: true })
@@ -132,7 +140,7 @@ export function MagicRings() {
     const resize = () => {
       const w = mount.clientWidth
       const h = mount.clientHeight
-      const dpr = Math.min(window.devicePixelRatio, 2)
+      const dpr = Math.min(window.devicePixelRatio, 1.5)
       renderer.setSize(w, h)
       renderer.setPixelRatio(dpr)
       uniforms.uResolution.value.set(w * dpr, h * dpr)
@@ -142,9 +150,10 @@ export function MagicRings() {
     ro.observe(mount)
 
     let frameId = 0
+    const t0 = performance.now()
     const animate = (t: number) => {
       frameId = requestAnimationFrame(animate)
-      uniforms.uTime.value = t * 0.001 * P.speed
+      uniforms.uTime.value = ((t - t0) / 1000) * P.speed
       renderer.render(scene, camera)
     }
     frameId = requestAnimationFrame(animate)
@@ -156,7 +165,14 @@ export function MagicRings() {
       renderer.dispose()
       material.dispose()
     }
-  }, [])
+  }, [started])
 
-  return <div ref={mountRef} className="magic-rings" style={{ filter: `blur(${P.blur}px)` }} aria-hidden="true" />
+  return (
+    <div
+      ref={mountRef}
+      className={`magic-rings ${started ? 'appear' : ''}`}
+      style={{ filter: `blur(${P.blur}px)` }}
+      aria-hidden="true"
+    />
+  )
 }

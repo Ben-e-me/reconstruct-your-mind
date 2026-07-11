@@ -1,6 +1,6 @@
-import { Fragment, Suspense, lazy, type CSSProperties, type ReactNode } from 'react'
+import { Fragment, Suspense, lazy, useEffect, useLayoutEffect, useRef, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
-import { COMMA_PAUSE, EASE, LETTER_DUR, LETTER_RISE, LETTER_STAGGER, type Segment } from '../lib/anim'
+import { COMMA_PAUSE, EASE, LETTER_DUR, LETTER_RISE, LETTER_STAGGER, revealDuration, type Segment } from '../lib/anim'
 
 // three.js is heavy — only load it when an organic-beat actually renders
 const MagicRings = lazy(() => import('./MagicRings').then((m) => ({ default: m.MagicRings })))
@@ -16,79 +16,128 @@ interface Props {
   dimmed?: boolean
 }
 
+const has = (w: Segment, c: string) => (w.classes ?? []).includes(c)
+
+// Continuous gradient across a phrase: measure each letter's real offset, then
+// animate a shared shift over time (+ gentle mouse reactivity) — like ReactBits GradientText.
+function GradientRun({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLSpanElement>(null)
+
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const measure = () => {
+      const base = el.getBoundingClientRect()
+      el.querySelectorAll<HTMLElement>('.letter').forEach((l) => {
+        const r = l.getBoundingClientRect()
+        l.style.backgroundSize = `${base.width}px 100%`
+        l.style.setProperty('--gx', `${-(r.left - base.left)}px`)
+      })
+    }
+    measure()
+    if (document.fonts?.ready) document.fonts.ready.then(measure)
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    let raf = 0
+    const t0 = performance.now()
+    let mouse = 0
+    let target = 0
+    const onMove = (e: MouseEvent) => {
+      const r = el.getBoundingClientRect()
+      target = ((e.clientX - (r.left + r.width / 2)) / window.innerWidth) * 36
+    }
+    window.addEventListener('mousemove', onMove)
+    const loop = (now: number) => {
+      raf = requestAnimationFrame(loop)
+      const t = (now - t0) / 1000
+      mouse += (target - mouse) * 0.05
+      el.style.setProperty('--gshift', `${Math.sin(t * 0.5) * 22 + mouse}px`)
+    }
+    raf = requestAnimationFrame(loop)
+    return () => {
+      cancelAnimationFrame(raf)
+      window.removeEventListener('mousemove', onMove)
+    }
+  }, [])
+
+  return (
+    <span ref={ref} className="gradient-run">
+      {children}
+    </span>
+  )
+}
+
 export function SplitText({ words, animate, as = 'span', className = '', baseDelay = 0, dimmed = false }: Props) {
   const Tag = as
   const shown = animate === 'visible'
   let li = 0
   let commaExtra = 0
 
-  const renderWord = (w: Segment, key: number): ReactNode => {
-    const classes = w.classes ?? []
-    const isGradient = classes.includes('gradient')
-    const chars = Array.from(w.text)
-    const n = chars.length
+  const letter = (ch: string, key: number, grad: boolean) => {
+    const delay = baseDelay + li * LETTER_STAGGER + commaExtra
+    li++
+    if (ch === ',') commaExtra += COMMA_PAUSE
+    return (
+      <motion.span
+        key={key}
+        className={grad ? 'letter grad' : 'letter'}
+        initial={{ opacity: 0, y: LETTER_RISE }}
+        animate={shown ? { opacity: 1, y: 0 } : { opacity: 0, y: LETTER_RISE }}
+        transition={{ duration: LETTER_DUR, ease: EASE, delay: shown ? delay : 0 }}
+      >
+        {ch}
+      </motion.span>
+    )
+  }
+
+  const wordSpan = (w: Segment, key: number, grad: boolean) => {
+    const cls = ['word', ...(w.classes ?? []).filter((c) => c !== 'gradient' && c !== 'organic-beat')]
     return (
       <Fragment key={key}>
-        <span className={['word', ...classes].join(' ').trim()}>
-          {chars.map((ch, ci) => {
-            const delay = baseDelay + li * LETTER_STAGGER + commaExtra
-            li++
-            if (ch === ',') commaExtra += COMMA_PAUSE
-            let style: CSSProperties | undefined
-            if (isGradient) {
-              const slice = n > 1 ? `${(ci / (n - 1)) * 100}%` : '50%'
-              style = {
-                backgroundSize: `${n * 100}% 100%`,
-                // static per-letter slice + a time-based pulse (see .gradient .letter)
-                backgroundPositionX: `calc(${slice} + var(--grad-shift, 0%))`,
-              }
-            }
-            return (
-              <motion.span
-                key={ci}
-                className="letter"
-                style={style}
-                initial={{ opacity: 0, y: LETTER_RISE }}
-                animate={shown ? { opacity: 1, y: 0 } : { opacity: 0, y: LETTER_RISE }}
-                transition={{ duration: LETTER_DUR, ease: EASE, delay: shown ? delay : 0 }}
-              >
-                {ch}
-              </motion.span>
-            )
-          })}
-        </span>
+        <span className={cls.join(' ').trim()}>{Array.from(w.text).map((ch, ci) => letter(ch, ci, grad))}</span>
         {w.space ? ' ' : ''}
       </Fragment>
     )
   }
 
-  // group consecutive organic-beat words so the rings render once, centered on the phrase
+  const ringsDelay = revealDuration(words)
+
   const nodes: ReactNode[] = []
   let i = 0
   while (i < words.length) {
-    if (words[i].classes?.includes('organic-beat')) {
+    if (has(words[i], 'organic-beat')) {
+      const start = i
       const run: Segment[] = []
-      const startKey = i
-      while (i < words.length && words[i].classes?.includes('organic-beat')) {
-        run.push(words[i])
-        i++
-      }
+      while (i < words.length && has(words[i], 'organic-beat')) run.push(words[i++])
       nodes.push(
-        <span key={`organic-${startKey}`} className="organic-group">
+        <span key={`o-${start}`} className="organic-group">
           <Suspense fallback={null}>
-            <MagicRings />
+            <MagicRings active={shown} delay={ringsDelay} />
           </Suspense>
-          {run.map((rw, ri) => renderWord(rw, startKey * 1000 + ri))}
+          <span className="organic-text">{run.map((w, wi) => wordSpan(w, wi, false))}</span>
         </span>,
       )
-    } else {
-      nodes.push(renderWord(words[i], i))
-      i++
+      continue
     }
+    if (has(words[i], 'gradient')) {
+      const start = i
+      const run: Segment[] = []
+      while (i < words.length && has(words[i], 'gradient')) run.push(words[i++])
+      nodes.push(<GradientRun key={`g-${start}`}>{run.map((w, wi) => wordSpan(w, wi, true))}</GradientRun>)
+      continue
+    }
+    nodes.push(wordSpan(words[i], i, false))
+    i++
   }
 
   return (
-    <Tag className={className} style={{ opacity: dimmed ? 0.4 : 1, transition: 'opacity 0.6s ease' }}>
+    <Tag className={className} style={{ opacity: dimmed ? 0.34 : 1, transition: 'opacity 0.6s ease' }}>
       {nodes}
     </Tag>
   )

@@ -13,6 +13,7 @@ interface Props {
   ready: boolean
   pos: number
   total: number
+  onStep: (i: number) => void
 }
 
 export function Controls({
@@ -28,6 +29,7 @@ export function Controls({
   ready,
   pos,
   total,
+  onStep,
 }: Props) {
   return (
     <>
@@ -44,7 +46,15 @@ export function Controls({
 
         <div className="progress">
           {Array.from({ length: total }).map((_, i) => (
-            <span key={i} className={`step ${i <= pos ? 'done' : ''}`} />
+            <button
+              key={i}
+              className={`step ${i <= pos ? 'done' : ''}`}
+              onClick={(e) => {
+                e.stopPropagation()
+                onStep(i)
+              }}
+              aria-label={`Go to step ${i + 1}`}
+            />
           ))}
         </div>
       </div>
@@ -60,7 +70,7 @@ export function Controls({
             <span className="arrow-glyph">←</span>
           </button>
           <button
-            className={`arrow arrow-right ${visible ? 'show' : ''} ${ready ? 'ready' : ''}`}
+            className={`arrow arrow-right ${ready ? 'ready' : ''}`}
             onClick={onNext}
             disabled={atEnd}
             aria-label="Forward"

@@ -8,7 +8,7 @@
   --grad-2: #d67d4a;
   --grad-3: #b5533a;
 
-  --font: 'Merriweather', Georgia, 'Times New Roman', serif;
+  --font: 'Bitter', Georgia, 'Times New Roman', serif;
 
   /* base size scales with the smaller of width/height so landscape phones fit */
   --beat-size: clamp(2rem, min(6.3vw, 8.5vh), 3.9rem);
@@ -18,8 +18,8 @@
      arrow inner edge = 4rem from edge; + 3*1.6rem = 8.8rem margin per side. */
   --measure: clamp(16rem, calc(100vw - 17.6rem), 72rem);
 
-  /* vertical rhythm between separately-revealed parts (stack/grid), tripled */
-  --group-gap: 1.65em;
+  /* vertical rhythm between separately-revealed parts (stack/grid) */
+  --group-gap: 2.48em;
 
   /* optical center, nudged 5% lower */
   --anchor: 45vh;

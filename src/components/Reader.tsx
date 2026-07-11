@@ -38,7 +38,7 @@ function gridRows(beats: BeatT[]): { beat: BeatT; index: number }[][] {
 
 export function Reader() {
   const scenes = useMemo(() => parseStory(storyRaw), [])
-  const { scene, revealedLocalIndex, next, prev, restart, atStart, atEnd, pos, total } = useReader(scenes)
+  const { scene, revealedLocalIndex, next, prev, restart, goTo, atStart, atEnd, pos, total } = useReader(scenes)
   const uiActive = useIdleUI(2000)
   const { theme, toggle } = useTheme()
   const [phase, setPhase] = useState<'title' | 'reading'>('title')
@@ -140,6 +140,7 @@ export function Reader() {
         onRestart={stop(toTitle)}
         onPrev={stop(prev)}
         onNext={stop(next)}
+        onStep={goTo}
         atStart={phase === 'title' || atStart}
         atEnd={phase === 'reading' && atEnd}
         ready={phase === 'reading' && beatDone && !atEnd}
