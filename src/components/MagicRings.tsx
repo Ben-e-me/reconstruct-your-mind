@@ -63,8 +63,8 @@ void main() {
 // their own, so baseRadius stays small (starts around the word) while scaleRate carries
 // them outward. noiseAmount is deliberately high — it's the grain Beni wants.
 const P = {
-  color: '#d8823f',
-  colorTwo: '#b0492b',
+  color: '#e3a951', // lighter, more golden-yellow rust
+  colorTwo: '#c26a38',
   speed: 0.8, // -20% ring animation speed
   ringCount: 10,
   attenuation: 15,
@@ -72,7 +72,7 @@ const P = {
   baseRadius: 0.1,
   radiusStep: 0.05,
   scaleRate: 0.2,
-  opacity: 0.4165, // -15% then a further -30%
+  opacity: 0.3332, // -15%, -30%, then a further -20%
   blur: 4,
   noiseAmount: 0.44,
   rotation: 90,

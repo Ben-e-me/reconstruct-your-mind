@@ -120,6 +120,10 @@ body {
 .word.gradient:not(.impact) {
   font-weight: 550;
 }
+/* the "sounds" gradient word gets a slightly heavier weight */
+.word.spark.gradient {
+  font-weight: 660;
+}
 /* thin: Bitter goes down to a genuine thin weight */
 .light {
   font-weight: 200;
@@ -200,6 +204,105 @@ body {
   display: block;
   width: 100% !important;
   height: 100% !important;
+}
+
+/* ---- full-screen background effects (portaled to <body> so fixed = viewport) ---- */
+/* Orb (ReactBits) — a big glowing sphere centred on screen, fades in after the text */
+.orb-fx {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(92vh, 92vw);
+  height: min(92vh, 92vw);
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0;
+  transition: opacity 2.8s ease;
+}
+.orb-fx.appear {
+  opacity: 0.3332; /* same as the magic-ring opacity */
+}
+.orb-fx canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.spark-fx,
+.starry-fx {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+/* Spark — dots pop outward from the centre in one wave, ±20% peak opacity, looping */
+.spark {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--fg);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.6);
+  animation-name: spark-pop;
+  animation-timing-function: ease-out;
+  animation-iteration-count: infinite;
+  will-change: opacity, transform;
+}
+@keyframes spark-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+  8% {
+    opacity: var(--peak, 0.4);
+    transform: translate(-50%, -50%) scale(1);
+  }
+  26% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  100% {
+    opacity: 0;
+  }
+}
+/* Starry — scattered dots at varied opacities; each twinkles on its own slow cycle */
+.starry-fx {
+  opacity: 0;
+  transition: opacity 2.5s ease;
+}
+.starry-fx.appear {
+  opacity: 1;
+}
+.star {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--fg);
+  transform: translate(-50%, -50%);
+  opacity: var(--base, 0.3);
+  animation-name: star-twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+@keyframes star-twinkle {
+  0%,
+  100% {
+    opacity: var(--base, 0.3);
+  }
+  4% {
+    opacity: calc(var(--base, 0.3) + 0.55);
+  }
+  9% {
+    opacity: var(--base, 0.3);
+  }
+}
+.starry-moon {
+  position: absolute;
+  top: 6vh;
+  right: 7vw;
+  width: clamp(46px, 9vw, 120px);
+  height: auto;
+  color: var(--fg);
+  opacity: 0.7;
 }
 
 /* standalone ellipsis — large, quiet, close under the last line; dots pulse in sequence */
@@ -586,13 +689,11 @@ body {
   /* size text (incl. titles) primarily by height so long beats & multi-line titles
      never clip under the mobile browser chrome */
   :root {
-    --beat-size: clamp(1.1rem, min(4.8vw, 5vh), 2.1rem);
-    --title-size: clamp(1.5rem, min(8vw, 7vh), 3rem);
+    /* +10% over the previous mobile sizing — there's vertical room now */
+    --beat-size: clamp(1.2rem, min(5.3vw, 5.5vh), 2.3rem);
+    --title-size: clamp(1.65rem, min(8.8vw, 7.7vh), 3.3rem);
     --ts-title-size: min(calc(var(--beat-size) * 1.32), 9vw);
     --ts-credit-size: calc(var(--beat-size) * 0.48); /* sublines +60% on mobile */
-    /* stack/grid gap: still tied to the font (so it scales with it) but a tighter
-       ratio on mobile, where the desktop 0.75x reads too airy on a small screen */
-    --group-gap: calc(var(--beat-size) * 0.55);
   }
   /* RESTART hard-left, LIGHT/DARK hard-right, so nothing crowds the vertical centre */
   .topbar {
@@ -617,6 +718,10 @@ body {
   .arrow-left.show {
     opacity: 0.1;
   }
+  /* on mobile the title shows the side keycap instead — drop the centre one to save height */
+  .press-key {
+    display: none;
+  }
 }
 
 /* when the browser chrome eats the height, drop the bottom progress strip and go
@@ -626,7 +731,7 @@ body {
     display: none;
   }
   :root {
-    --beat-size: clamp(1rem, 5.2vh, 1.9rem);
-    --title-size: clamp(1.3rem, 6.5vh, 2.4rem);
+    --beat-size: clamp(1.1rem, 5.7vh, 2.1rem);
+    --title-size: clamp(1.45rem, 7.2vh, 2.65rem);
   }
 }

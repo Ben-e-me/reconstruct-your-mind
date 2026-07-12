@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { describe, it, expect } from 'vitest'
 import { parseStory, totalBeats } from './parseStory'
 
@@ -48,5 +50,23 @@ describe('parseStory', () => {
     const scenes = parseStory('# The Title\n\n—')
     expect(scenes[0].beats[0].type).toBe('title')
     expect(scenes[1].beats[0].type).toBe('divider')
+  })
+
+  it('parses the real story.txt with the intended combined markups', () => {
+    const raw = readFileSync(fileURLToPath(new URL('../content/story.txt', import.meta.url)), 'utf8')
+    const scenes = parseStory(raw)
+    const cls = (t: string) => {
+      for (const s of scenes) for (const b of s.beats) {
+        const w = b.words.find((w) => w.text.replace(/[.,?]/g, '') === t)
+        if (w) return w.classes
+      }
+      return null
+    }
+    expect(cls('certainty')).toEqual(expect.arrayContaining(['italic', 'light']))
+    expect(cls('wonder')).toEqual(expect.arrayContaining(['orb', 'gradient']))
+    expect(cls('sounds')).toEqual(expect.arrayContaining(['spark', 'gradient']))
+    expect(cls('Tomorrow')).toEqual(expect.arrayContaining(['starry', 'gradient', 'impact']))
+    expect(cls('eighty')).toEqual(expect.arrayContaining(['italic', 'light']))
+    expect(cls('deeper')).toEqual(expect.arrayContaining(['gradient', 'impact']))
   })
 })

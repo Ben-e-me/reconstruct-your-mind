@@ -182,7 +182,7 @@ export function Reader() {
         onStep={jumpTo}
         atStart={phase === 'title' || atStart}
         atEnd={phase === 'reading' && atEnd}
-        ready={phase === 'title' || (phase === 'reading' && beatDone && !atEnd)}
+        ready={phase === 'title' ? coarse : phase === 'reading' && beatDone && !atEnd}
         pos={phase === 'title' ? -1 : pos}
         total={total}
       />
