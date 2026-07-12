@@ -12,23 +12,18 @@ import {
 import { motion } from 'framer-motion'
 import { COMMA_PAUSE, EASE, LETTER_DUR, LETTER_RISE, LETTER_STAGGER, revealDuration, type Segment } from '../lib/anim'
 
-// heavy / WebGL effects — only loaded when a beat actually uses one
+// three.js is heavy — only load MagicRings when an organic-beat actually renders.
+// The full-screen effects (orb/spark/starry) are owned by Reader, not here.
 const MagicRings = lazy(() => import('./MagicRings').then((m) => ({ default: m.MagicRings })))
-const Orb = lazy(() => import('./Orb').then((m) => ({ default: m.Orb })))
-const Spark = lazy(() => import('./Spark').then((m) => ({ default: m.Spark })))
-const Starry = lazy(() => import('./Starry').then((m) => ({ default: m.Starry })))
 
-// class name (from [x]{class} markup) -> full-screen background effect behind the phrase
+// class name (from [x]{class} markup) -> inline background effect behind the phrase
 type EffectProps = { active: boolean; delay: number }
 const EFFECTS: Record<string, LazyExoticComponent<ComponentType<EffectProps>>> = {
   'organic-beat': MagicRings,
-  orb: Orb,
-  spark: Spark,
-  starry: Starry,
 }
 const EFFECT_KEYS = Object.keys(EFFECTS)
-// effect classes that are purely background (stripped from the text span). 'spark' is
-// kept because it also nudges the word's weight.
+// effect classes that carry no text style (stripped from the span). 'spark' is kept
+// because it also nudges the word's weight.
 const BG_ONLY = new Set(['organic-beat', 'orb', 'starry'])
 
 type As = 'p' | 'h1' | 'span' | 'div'

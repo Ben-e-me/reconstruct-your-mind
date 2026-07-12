@@ -55,12 +55,18 @@ describe('parseStory', () => {
   it('parses the real story.txt with the intended combined markups', () => {
     const raw = readFileSync(fileURLToPath(new URL('../content/story.txt', import.meta.url)), 'utf8')
     const scenes = parseStory(raw)
+    // return the classes of a matching word, preferring a styled occurrence (some words
+    // like "are" appear both plain and styled elsewhere in the text)
     const cls = (t: string) => {
+      let fallback: string[] | null = null
       for (const s of scenes) for (const b of s.beats) {
         const w = b.words.find((w) => w.text.replace(/[.,?]/g, '') === t)
-        if (w) return w.classes
+        if (w) {
+          if (w.classes.length) return w.classes
+          fallback ??= w.classes
+        }
       }
-      return null
+      return fallback
     }
     expect(cls('certainty')).toEqual(expect.arrayContaining(['italic', 'light']))
     expect(cls('wonder')).toEqual(expect.arrayContaining(['orb', 'gradient']))
@@ -68,5 +74,10 @@ describe('parseStory', () => {
     expect(cls('Tomorrow')).toEqual(expect.arrayContaining(['starry', 'gradient', 'impact']))
     expect(cls('eighty')).toEqual(expect.arrayContaining(['italic', 'light']))
     expect(cls('deeper')).toEqual(expect.arrayContaining(['gradient', 'impact']))
+    // round 6: gradient+bold, and the multi-class welcome-home
+    expect(cls('are')).toEqual(expect.arrayContaining(['gradient', 'bold']))
+    expect(cls('different')).toEqual(expect.arrayContaining(['italic', 'light']))
+    expect(cls('genuinely')).toEqual(expect.arrayContaining(['italic']))
+    expect(cls('Welcome')).toEqual(expect.arrayContaining(['organic-beat', 'gradient', 'bold', 'slow']))
   })
 })

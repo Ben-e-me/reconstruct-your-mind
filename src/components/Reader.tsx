@@ -1,4 +1,14 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent, type TouchEvent } from 'react'
+import {
+  Suspense,
+  lazy,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent,
+  type TouchEvent,
+} from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import storyRaw from '../content/story.txt?raw'
 import { parseStory, type Beat as BeatT } from '../lib/parseStory'
@@ -16,6 +26,13 @@ import {
 import { Beat } from './Beat'
 import { Controls } from './Controls'
 import { TitleScreen } from './TitleScreen'
+
+// full-screen background effects (lazy — each pulls its own canvas/WebGL)
+const Orb = lazy(() => import('./Orb').then((m) => ({ default: m.Orb })))
+const Spark = lazy(() => import('./Spark').then((m) => ({ default: m.Spark })))
+const Starry = lazy(() => import('./Starry').then((m) => ({ default: m.Starry })))
+const FULL_EFFECTS = { orb: Orb, spark: Spark, starry: Starry }
+const FULL_EFFECT_KEYS = Object.keys(FULL_EFFECTS)
 
 // group grid beats into rows: a {left} directly followed by a {right} share one row
 function gridRows(beats: BeatT[]): { beat: BeatT; index: number }[][] {
@@ -122,6 +139,22 @@ export function Reader() {
 
   const transition = { duration: BLUR_DUR, ease: 'easeInOut' as const }
 
+  // full-screen background effect for the current scene (orb/spark/starry). Activates
+  // when the beat that carries it has been revealed; owned here (not in SplitText) so it
+  // sits outside the scene transform and can blur out with the text on exit.
+  const activeEffect = useMemo(() => {
+    if (phase !== 'reading' || !scene) return null
+    for (let i = 0; i <= revealedLocalIndex; i++) {
+      const b = scene.beats[i]
+      if (!b) continue
+      for (const w of b.words) {
+        const kind = FULL_EFFECT_KEYS.find((k) => (w.classes ?? []).includes(k))
+        if (kind) return { kind, key: `${scene.id}:${i}:${kind}`, delay: revealDuration(b.words) }
+      }
+    }
+    return null
+  }, [phase, scene, revealedLocalIndex])
+
   // the very last beat ("Welcome home") fades in much more slowly for a gentle finale
   const finaleScale = atEnd ? 4 : 1
 
@@ -139,6 +172,27 @@ export function Reader() {
 
   return (
     <div className="stage" onClick={onStageClick} onTouchEnd={onStageTouchEnd}>
+      <AnimatePresence>
+        {activeEffect &&
+          (() => {
+            const Effect = FULL_EFFECTS[activeEffect.kind as keyof typeof FULL_EFFECTS]
+            return (
+              <motion.div
+                key={activeEffect.key}
+                className="fx-layer"
+                initial={{ opacity: 1, filter: 'blur(0px)' }}
+                animate={{ opacity: 1, filter: 'blur(0px)' }}
+                exit={{ opacity: 0, filter: 'blur(12px)' }}
+                transition={transition}
+              >
+                <Suspense fallback={null}>
+                  <Effect active delay={activeEffect.delay} />
+                </Suspense>
+              </motion.div>
+            )
+          })()}
+      </AnimatePresence>
+
       <AnimatePresence mode="wait">
         {phase === 'title' ? (
           <motion.div

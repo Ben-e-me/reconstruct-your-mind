@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import * as THREE from 'three'
 
 // Ported from ReactBits "Orb" (originally ogl) to three.js. Values from Beni's preview:
@@ -221,9 +220,7 @@ export function Orb({ active = true, delay = 0 }: { active?: boolean; delay?: nu
     }
   }, [started])
 
-  // portal to body: the scene has a transform, which would otherwise trap position:fixed
-  return createPortal(
-    <div ref={mountRef} className={`orb-fx ${started ? 'appear' : ''}`} aria-hidden="true" />,
-    document.body,
-  )
+  // rendered inside the scene (absolute), so it blurs out with the text on scene exit.
+  // `.pulse` fades the whole orb in and out on a loop.
+  return <div ref={mountRef} className={`orb-fx ${started ? 'pulse' : ''}`} aria-hidden="true" />
 }

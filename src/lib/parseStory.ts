@@ -27,8 +27,9 @@ const isEllipsis = (t: string) => t === '…' || t === '...'
 const isDivider = (t: string) => t === '—' || t === '--'
 
 // Inline markup + auto-italic quotes -> per-word tokens (classes carried onto each word).
+// A custom span may carry several space/comma-separated classes: [text]{a b c}
 const MARK =
-  /(\*\*[^*]+\*\*|\*[^*]+\*|__[^_]+__|_[^_]+_|~[^~]+~|\[[^\]]+\]\{[A-Za-z0-9_-]+\}|“[^”]+”|"[^"]+")/g
+  /(\*\*[^*]+\*\*|\*[^*]+\*|__[^_]+__|_[^_]+_|~[^~]+~|\[[^\]]+\]\{[A-Za-z0-9_ ,.-]+\}|“[^”]+”|"[^"]+")/g
 
 function classifySegment(seg: string): { text: string; classes: string[] } {
   if (/^\*\*[^*]+\*\*$/.test(seg)) return { text: seg.slice(2, -2), classes: ['gradient', 'impact'] }
@@ -42,7 +43,7 @@ function classifySegment(seg: string): { text: string; classes: string[] } {
   return { text: seg, classes: [] }
 }
 
-const customRe = /^\[([^\]]+)\]\{([A-Za-z0-9_-]+)\}$/
+const customRe = /^\[([^\]]+)\]\{([A-Za-z0-9_ ,.-]+)\}$/
 
 function tokenize(raw: string): Word[] {
   const stream: { text: string; classes: string[]; isSpace: boolean }[] = []
@@ -54,7 +55,8 @@ function tokenize(raw: string): Word[] {
     for (const part of parts) {
       const custom = part.match(customRe)
       if (custom) {
-        walk(custom[1], [...inherited, custom[2]]) // recurse into the bracket body
+        const extra = custom[2].split(/[\s,]+/).filter(Boolean) // [text]{a b c} -> multiple classes
+        walk(custom[1], [...inherited, ...extra]) // recurse into the bracket body
         continue
       }
       const { text, classes } = classifySegment(part)

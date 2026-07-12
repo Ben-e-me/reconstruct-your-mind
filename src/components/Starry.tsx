@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
-import { createPortal } from 'react-dom'
 
 // "Starry": a binary-simplified night sky — small circles in the contrast colour,
 // scattered stochastically at varied opacities, with the occasional one twinkling
@@ -14,7 +13,7 @@ interface Star {
   delay: number
 }
 
-const COUNT = 44
+const COUNT = 80
 
 function buildStars(): Star[] {
   return Array.from({ length: COUNT }, () => ({
@@ -22,9 +21,9 @@ function buildStars(): Star[] {
     y: Math.random() * 100,
     size: 1 + Math.random() * 2.4,
     base: 0.12 + Math.random() * 0.4,
-    // ~COUNT stars each twinkling once per ~22s averages ~2 blinks/sec (~one per 0.5s)
-    dur: 16 + Math.random() * 12,
-    delay: Math.random() * 22,
+    // each star twinkles once per ~7-13s -> across COUNT stars ~one blink every ~0.5s
+    dur: 7 + Math.random() * 6,
+    delay: Math.random() * 13,
   }))
 }
 
@@ -41,7 +40,7 @@ export function Starry({ active = true, delay = 0 }: { active?: boolean; delay?:
     return () => window.clearTimeout(t)
   }, [active, delay])
 
-  return createPortal(
+  return (
     <div className={`starry-fx ${started ? 'appear' : ''}`} aria-hidden="true">
       {started &&
         stars.map((s, i) => (
@@ -83,7 +82,6 @@ export function Starry({ active = true, delay = 0 }: { active?: boolean; delay?:
           </g>
         </svg>
       )}
-    </div>,
-    document.body,
+    </div>
   )
 }

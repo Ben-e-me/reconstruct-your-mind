@@ -8,7 +8,7 @@ Not through positive thinking.
 
 But through [*curiosity*]{organic-beat}.
 
-Whenever you genuinely question something your mind has treated as certain, your brain enters a state where change becomes possible.
+Whenever you [genuinely]{italic} question something your mind has treated as certain, your brain enters a state where *change becomes possible.*
 
 As you read, don't try to convince yourself of anything.
 
@@ -62,7 +62,7 @@ A belief that says~…~
 "I should be who other people need me to be."
 :::
 
-Maybe it has different words.
+Maybe it has [_different_]{italic} words.
 
 Maybe you've never said it out loud.
 
@@ -96,7 +96,7 @@ Just allow your mind to search.
 
 Children are extraordinary observers.
 
-Before they know who they __are__, they learn who they _need to_ be.
+Before they know who they [__are__]{gradient}, they learn who they _need to_ be.
 
 ::: grid
 {left} Accepted.
@@ -264,7 +264,7 @@ Imagine meeting yourself at [_eighty years old._]{italic}
 ::: stack
 Not wiser because of age.
 
-Simply someone who has lived your entire life.
+Simply someone who has *lived* your entire life.
 :::
 
 They know [every decision]{italic} you made.
@@ -341,4 +341,4 @@ Without even realizing it~…~
 You have already begun to see yourself through your own eyes again.
 :::
 
-[Welcome home]{organic-beat}
+[__Welcome home__]{organic-beat gradient slow}
