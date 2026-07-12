@@ -114,7 +114,9 @@ export function SplitText({
   }
 
   const wordSpan = (w: Segment, key: number, grad: boolean) => {
-    const cls = ['word', ...(w.classes ?? []).filter((c) => c !== 'gradient' && c !== 'organic-beat')]
+    // keep 'gradient' on the span (drives its font-weight); the visual fill lives on
+    // the letters via `grad`. only 'organic-beat' is stripped (handled by the ring wrapper).
+    const cls = ['word', ...(w.classes ?? []).filter((c) => c !== 'organic-beat')]
     return (
       <Fragment key={key}>
         <span className={cls.join(' ').trim()}>{Array.from(w.text).map((ch, ci) => letter(ch, ci, grad))}</span>
@@ -132,12 +134,14 @@ export function SplitText({
       const start = i
       const run: Segment[] = []
       while (i < words.length && has(words[i], 'organic-beat')) run.push(words[i++])
+      const runGrad = run.some((w) => has(w, 'gradient')) // e.g. [*curiosity*]{organic-beat}
+      const inner = run.map((w, wi) => wordSpan(w, wi, runGrad))
       nodes.push(
         <span key={`o-${start}`} className="organic-group">
           <Suspense fallback={null}>
             <MagicRings active={shown} delay={ringsDelay} />
           </Suspense>
-          <span className="organic-text">{run.map((w, wi) => wordSpan(w, wi, false))}</span>
+          <span className="organic-text">{runGrad ? <GradientRun>{inner}</GradientRun> : inner}</span>
         </span>,
       )
       continue

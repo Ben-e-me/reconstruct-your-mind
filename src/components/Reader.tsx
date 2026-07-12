@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type MouseEvent } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent, type TouchEvent } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import storyRaw from '../content/story.txt?raw'
 import { parseStory, type Beat as BeatT } from '../lib/parseStory'
@@ -54,6 +54,37 @@ export function Reader() {
     setPhase('title')
   }, [restart])
 
+  // jump straight to a step from a progress dot — works from the title too
+  const jumpTo = useCallback(
+    (i: number) => {
+      goTo(i)
+      setPhase('reading')
+    },
+    [goTo],
+  )
+
+  const advance = useCallback(() => {
+    if (phase === 'title') start()
+    else next()
+  }, [phase, start, next])
+
+  // Advance on a real tap. Touch fires `touchend` directly (so a single tap works even
+  // while the idle UI is hidden — no "first tap only wakes the UI" dead tap), and the
+  // synthesized click is de-duped by timestamp. Taps on a control are left to the control.
+  const lastTouch = useRef(0)
+  const isControl = (t: EventTarget | null) =>
+    t instanceof Element && !!t.closest('.ctrl, .arrow, .step, .credit-link')
+  const onStageClick = (e: MouseEvent) => {
+    if (Date.now() - lastTouch.current < 700) return
+    if (isControl(e.target)) return
+    advance()
+  }
+  const onStageTouchEnd = (e: TouchEvent) => {
+    if (isControl(e.target)) return
+    lastTouch.current = Date.now()
+    advance()
+  }
+
   useEffect(() => {
     if (phase !== 'title') return
     const onKey = (e: KeyboardEvent) => {
@@ -88,8 +119,8 @@ export function Reader() {
 
   const transition = { duration: BLUR_DUR, ease: 'easeInOut' as const }
 
-  // the very last beat ("Welcome home") fades in twice as slowly for a gentle finale
-  const finaleScale = atEnd ? 2 : 1
+  // the very last beat ("Welcome home") fades in much more slowly for a gentle finale
+  const finaleScale = atEnd ? 4 : 1
 
   const renderBeat = (b: BeatT, index: number) => {
     const revealed = index <= revealedLocalIndex || (b.type === 'ellipsis' && index - 1 <= revealedLocalIndex)
@@ -104,7 +135,7 @@ export function Reader() {
   }
 
   return (
-    <div className="stage" onClick={phase === 'title' ? start : next}>
+    <div className="stage" onClick={onStageClick} onTouchEnd={onStageTouchEnd}>
       <AnimatePresence mode="wait">
         {phase === 'title' ? (
           <motion.div
@@ -139,16 +170,16 @@ export function Reader() {
 
       <Controls
         visible={uiActive}
-        showNav={phase === 'reading'}
+        showNav
         theme={theme}
         onToggleTheme={stop(toggle)}
         onRestart={stop(toTitle)}
         onPrev={stop(prev)}
-        onNext={stop(next)}
-        onStep={goTo}
+        onNext={stop(phase === 'title' ? start : next)}
+        onStep={jumpTo}
         atStart={phase === 'title' || atStart}
         atEnd={phase === 'reading' && atEnd}
-        ready={phase === 'reading' && beatDone && !atEnd}
+        ready={phase === 'title' || (phase === 'reading' && beatDone && !atEnd)}
         pos={phase === 'title' ? -1 : pos}
         total={total}
       />

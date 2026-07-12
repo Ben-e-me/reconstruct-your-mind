@@ -15,6 +15,13 @@ describe('parseStory', () => {
     expect(words.find((w) => w.text === 'warm')?.classes).toContain('gradient')
   })
 
+  it('combines nested markup inside a custom class, e.g. [*curiosity*]{organic-beat}', () => {
+    const [scene] = parseStory('But through [*curiosity*]{organic-beat}.')
+    const word = scene.beats[0].words.find((w) => w.text === 'curiosity')
+    expect(word?.classes).toContain('organic-beat')
+    expect(word?.classes).toContain('gradient')
+  })
+
   it('auto-italicizes quoted text', () => {
     const [scene] = parseStory('She said “no” today')
     const quoted = scene.beats[0].words.filter((w) => w.classes.includes('quote'))

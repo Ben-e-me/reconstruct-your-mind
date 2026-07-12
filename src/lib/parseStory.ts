@@ -42,18 +42,31 @@ function classifySegment(seg: string): { text: string; classes: string[] } {
   return { text: seg, classes: [] }
 }
 
+const customRe = /^\[([^\]]+)\]\{([A-Za-z0-9_-]+)\}$/
+
 function tokenize(raw: string): Word[] {
-  const parts = raw.split(MARK).filter((p) => p !== undefined && p !== '')
-  // stream of word/whitespace pieces, carrying class per piece
   const stream: { text: string; classes: string[]; isSpace: boolean }[] = []
-  for (const part of parts) {
-    const { text, classes } = classifySegment(part)
-    // inline ellipsis -> three separate dots so each animates on its own
-    for (const piece of text.replace(/…/g, '...').split(/(\s+)/)) {
-      if (piece === '') continue
-      stream.push({ text: piece, classes, isSpace: /^\s+$/.test(piece) })
+
+  // Walk a string, splitting on inline markup. `inherited` carries classes down so
+  // markup can nest, e.g. [*curiosity*]{organic-beat} -> gradient + organic-beat.
+  const walk = (input: string, inherited: string[]) => {
+    const parts = input.split(MARK).filter((p) => p !== undefined && p !== '')
+    for (const part of parts) {
+      const custom = part.match(customRe)
+      if (custom) {
+        walk(custom[1], [...inherited, custom[2]]) // recurse into the bracket body
+        continue
+      }
+      const { text, classes } = classifySegment(part)
+      // inline ellipsis -> three separate dots so each animates on its own
+      for (const piece of text.replace(/…/g, '...').split(/(\s+)/)) {
+        if (piece === '') continue
+        stream.push({ text: piece, classes: [...inherited, ...classes], isSpace: /^\s+$/.test(piece) })
+      }
     }
   }
+  walk(raw, [])
+
   const words: Word[] = []
   for (let i = 0; i < stream.length; i++) {
     const s = stream[i]

@@ -114,7 +114,11 @@ body {
   font-weight: 800;
 }
 .bold {
-  font-weight: 900;
+  font-weight: 810; /* __bold__ -10% */
+}
+/* plain gradient (*x*) carries the same weight as italic; **x** keeps its impact weight */
+.word.gradient:not(.impact) {
+  font-weight: 550;
 }
 /* thin: Bitter goes down to a genuine thin weight */
 .light {
@@ -205,7 +209,7 @@ body {
   gap: 0.14em;
   font-size: calc(var(--beat-size) * 2.3);
   line-height: 0.4;
-  margin-top: 12px; /* halves the gap to the line above (was 64px on top of the flex gap) */
+  margin-top: 0; /* gap to the line above is just the flex group-gap, same as stack/grid */
 }
 .ellipsis .dot {
   display: inline-block;
@@ -328,17 +332,18 @@ body {
   opacity: 0.3;
   animation: pulse 2.6s ease-in-out infinite;
 }
-/* keyboard keycap under "press to start" — 80% of the arrow keycap; fades in with the text */
+/* keyboard keycap under "press to start" — identical to the side-arrow keycaps */
 .press-key {
   margin-top: 1.1em;
-  width: 1.92rem;
-  height: 1.92rem;
+  width: 2.4rem;
+  height: 2.4rem;
   border: 1.5px solid var(--fg);
-  border-radius: 6px;
+  border-radius: 7px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9rem;
+  font-size: 1.1rem;
+  line-height: 1;
   letter-spacing: 0;
   opacity: 0;
   animation: press-key-in 0.6s ease both;
@@ -574,6 +579,13 @@ body {
 
 /* ---- mobile / touch: maximize the central reading space ---- */
 @media (pointer: coarse) {
+  /* size text (incl. titles) primarily by height so long beats & multi-line titles
+     never clip under the mobile browser chrome */
+  :root {
+    --beat-size: clamp(1.1rem, min(4.8vw, 5vh), 2.1rem);
+    --title-size: clamp(1.5rem, min(8vw, 7vh), 3rem);
+    --ts-title-size: min(calc(var(--beat-size) * 1.32), 9vw);
+  }
   /* RESTART hard-left, LIGHT/DARK hard-right, so nothing crowds the vertical centre */
   .topbar {
     left: 1rem;
@@ -588,13 +600,14 @@ body {
   }
 }
 
-/* when the browser chrome eats the height, drop the bottom progress strip and let
-   the text use a height-driven size so even long beats fit without clipping */
+/* when the browser chrome eats the height, drop the bottom progress strip and go
+   even smaller so even the longest beats and the section titles fully fit */
 @media (pointer: coarse) and (max-height: 560px) {
   .progress {
     display: none;
   }
   :root {
-    --beat-size: clamp(1.3rem, 6vh, 2.4rem);
+    --beat-size: clamp(1rem, 5.2vh, 1.9rem);
+    --title-size: clamp(1.3rem, 6.5vh, 2.4rem);
   }
 }

@@ -21,8 +21,10 @@
   /* vertical rhythm between separately-revealed parts (stack/grid) */
   --group-gap: 2.48em;
 
-  /* optical center, nudged a further 5% lower */
-  --anchor: 50vh;
+  /* optical center. dvh (not vh) so on mobile it centres on the *visible* area,
+     not the area behind the browser chrome. */
+  --anchor: 47.5vh;
+  --anchor: 47.5dvh;
 
   /* title screen — capped to viewport width so the one-line title never clips */
   --ts-title-size: min(calc(var(--beat-size) * 1.32), 8.5vw);

@@ -72,7 +72,7 @@ const P = {
   baseRadius: 0.1,
   radiusStep: 0.05,
   scaleRate: 0.2,
-  opacity: 0.7,
+  opacity: 0.595, // -15%
   blur: 4,
   noiseAmount: 0.44,
   rotation: 90,
@@ -141,6 +141,8 @@ export function MagicRings({ active = true, delay = 0 }: { active?: boolean; del
     const quad = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), material)
     scene.add(quad)
 
+    // the marked word sits next to the canvas in the same .organic-group
+    const textEl = mount.parentElement?.querySelector('.organic-text') as HTMLElement | null
     const resize = () => {
       const w = mount.clientWidth
       const h = mount.clientHeight
@@ -148,10 +150,16 @@ export function MagicRings({ active = true, delay = 0 }: { active?: boolean; del
       renderer.setSize(w, h)
       renderer.setPixelRatio(dpr)
       uniforms.uResolution.value.set(w * dpr, h * dpr)
+      // first ring diameter = 125% of the text width (baseRadius cancels the box size,
+      // so the box can stay huge -> its noisy edges stay off-screen while the innermost
+      // ring hugs the word and the outer rings still grow past the window width).
+      const tw = textEl ? textEl.getBoundingClientRect().width : w * 0.05
+      uniforms.uBaseRadius.value = Math.max(0.005, (0.625 * tw) / w)
     }
     resize()
     const ro = new ResizeObserver(resize)
     ro.observe(mount)
+    if (textEl) ro.observe(textEl)
 
     let frameId = 0
     const t0 = performance.now()
