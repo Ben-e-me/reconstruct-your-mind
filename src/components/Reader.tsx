@@ -88,6 +88,9 @@ export function Reader() {
 
   const transition = { duration: BLUR_DUR, ease: 'easeInOut' as const }
 
+  // the very last beat ("Welcome home") fades in twice as slowly for a gentle finale
+  const finaleScale = atEnd ? 2 : 1
+
   const renderBeat = (b: BeatT, index: number) => {
     const revealed = index <= revealedLocalIndex || (b.type === 'ellipsis' && index - 1 <= revealedLocalIndex)
     const dimmed = b.type !== 'ellipsis' && index < revealedLocalIndex
@@ -95,7 +98,9 @@ export function Reader() {
       b.type === 'ellipsis' && index > 0 && scene
         ? revealDuration(scene.beats[index - 1].words) + ELLIPSIS_PAUSE
         : 0
-    return <Beat key={b.id} beat={b} revealed={revealed} dimmed={dimmed} startAfter={startAfter} />
+    return (
+      <Beat key={b.id} beat={b} revealed={revealed} dimmed={dimmed} startAfter={startAfter} durScale={finaleScale} />
+    )
   }
 
   return (

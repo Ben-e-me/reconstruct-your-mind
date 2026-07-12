@@ -8,11 +8,13 @@ export function Beat({
   revealed,
   dimmed = false,
   startAfter = 0,
+  durScale = 1,
 }: {
   beat: BeatT
   revealed: boolean
   dimmed?: boolean
   startAfter?: number
+  durScale?: number
 }) {
   if (beat.type === 'divider') {
     return (
@@ -52,6 +54,7 @@ export function Beat({
       words={beat.words}
       animate={revealed ? 'visible' : 'hidden'}
       dimmed={dimmed}
+      durScale={durScale}
       as={beat.type === 'title' ? 'h1' : 'p'}
       className={`beat ${beat.type} place-${beat.placement}`}
     />

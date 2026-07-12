@@ -14,20 +14,27 @@ interface Props {
   className?: string
   baseDelay?: number
   dimmed?: boolean
+  durScale?: number // multiplies each letter's fade duration (used to slow the finale)
 }
 
 const has = (w: Segment, c: string) => (w.classes ?? []).includes(c)
 
-// Continuous gradient across a phrase: measure each letter's real offset, then
-// animate a shared shift over time (+ gentle mouse reactivity) — like ReactBits GradientText.
+// Continuous gradient across a phrase: measure each letter's real offset, then drift a
+// shared shift over time so the rust colours flow through the phrase — like ReactBits
+// GradientText (background-position animated across a repeating gradient). The gradient
+// spans exactly the phrase width and repeats, so a full-width drift loops seamlessly.
+const GRAD_CYCLE = 8 // seconds for the colours to travel one full phrase width
+
 function GradientRun({ children }: { children: ReactNode }) {
   const ref = useRef<HTMLSpanElement>(null)
+  const widthRef = useRef(1)
 
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
     const measure = () => {
       const base = el.getBoundingClientRect()
+      widthRef.current = base.width || 1
       el.querySelectorAll<HTMLElement>('.letter').forEach((l) => {
         const r = l.getBoundingClientRect()
         l.style.backgroundSize = `${base.width}px 100%`
@@ -50,14 +57,16 @@ function GradientRun({ children }: { children: ReactNode }) {
     let target = 0
     const onMove = (e: MouseEvent) => {
       const r = el.getBoundingClientRect()
-      target = ((e.clientX - (r.left + r.width / 2)) / window.innerWidth) * 36
+      target = ((e.clientX - (r.left + r.width / 2)) / window.innerWidth) * 24
     }
     window.addEventListener('mousemove', onMove)
     const loop = (now: number) => {
       raf = requestAnimationFrame(loop)
       const t = (now - t0) / 1000
       mouse += (target - mouse) * 0.05
-      el.style.setProperty('--gshift', `${Math.sin(t * 0.5) * 22 + mouse}px`)
+      const w = widthRef.current
+      const drift = ((t / GRAD_CYCLE) * w) % w // one seamless phrase-width loop
+      el.style.setProperty('--gshift', `${drift + mouse}px`)
     }
     raf = requestAnimationFrame(loop)
     return () => {
@@ -73,7 +82,15 @@ function GradientRun({ children }: { children: ReactNode }) {
   )
 }
 
-export function SplitText({ words, animate, as = 'span', className = '', baseDelay = 0, dimmed = false }: Props) {
+export function SplitText({
+  words,
+  animate,
+  as = 'span',
+  className = '',
+  baseDelay = 0,
+  dimmed = false,
+  durScale = 1,
+}: Props) {
   const Tag = as
   const shown = animate === 'visible'
   let li = 0
@@ -89,7 +106,7 @@ export function SplitText({ words, animate, as = 'span', className = '', baseDel
         className={grad ? 'letter grad' : 'letter'}
         initial={{ opacity: 0, y: LETTER_RISE }}
         animate={shown ? { opacity: 1, y: 0 } : { opacity: 0, y: LETTER_RISE }}
-        transition={{ duration: LETTER_DUR, ease: EASE, delay: shown ? delay : 0 }}
+        transition={{ duration: LETTER_DUR * durScale, ease: EASE, delay: shown ? delay : 0 }}
       >
         {ch}
       </motion.span>

@@ -27,6 +27,8 @@ body {
   overflow: hidden;
   cursor: pointer;
   user-select: none;
+  /* kill the 300ms double-tap-zoom delay so a single tap advances immediately */
+  touch-action: manipulation;
 }
 
 /* reading scene: whole group centered on the optical center, nothing repositions */
@@ -76,7 +78,8 @@ body {
 .beat {
   font-size: var(--beat-size);
   line-height: var(--line);
-  letter-spacing: -0.01em;
+  letter-spacing: normal;
+  font-weight: 440; /* general text +10% over the 400 default */
   max-width: var(--measure);
   text-wrap: balance;
 }
@@ -88,7 +91,7 @@ body {
 .title {
   font-size: var(--title-size);
   font-weight: 700;
-  letter-spacing: 0.04em; /* # marker: looser tracking */
+  letter-spacing: normal;
   max-width: 18ch;
 }
 
@@ -105,6 +108,7 @@ body {
 .quote,
 .italic {
   font-style: italic;
+  font-weight: 550; /* +25% over general text — reads as a steeper italic */
 }
 .impact {
   font-weight: 800;
@@ -117,7 +121,7 @@ body {
   font-weight: 200;
 }
 .soft {
-  opacity: 0.5;
+  opacity: 0.425; /* -15% */
 }
 
 /* gradient: measured per-letter slice -> one continuous fill across the whole phrase.
@@ -162,33 +166,30 @@ body {
     transform: scale(1.045);
   }
 }
-/* WebGL shader canvas (see MagicRings.tsx) — starts small around the word, then
-   scales up to cover the whole page as it fades in. */
+/* WebGL shader canvas (see MagicRings.tsx). The box is FIXED at full stage size and
+   centered on the marked word — it never scales. The rings themselves start small
+   around the word and grow outward across the whole stage (driven by the shader), so
+   there is no scaling box edge. Only opacity fades in. */
 .magic-rings {
   position: absolute;
   left: 50%;
   top: 50%;
-  width: max(150vw, 150vh);
-  height: max(150vw, 150vh);
+  width: max(220vw, 220vh);
+  height: max(220vw, 220vh);
   pointer-events: none;
   z-index: 0;
   opacity: 0;
-  transform: translate(-50%, -50%) scale(0.12);
+  transform: translate(-50%, -50%);
 }
 .magic-rings.appear {
-  animation: rings-appear 4.5s cubic-bezier(0.2, 0.6, 0.2, 1) forwards;
+  animation: rings-appear 2.4s ease forwards;
 }
 @keyframes rings-appear {
-  0% {
+  from {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.12);
   }
-  35% {
+  to {
     opacity: 1;
-  }
-  100% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
   }
 }
 .magic-rings canvas {
@@ -204,7 +205,7 @@ body {
   gap: 0.14em;
   font-size: calc(var(--beat-size) * 2.3);
   line-height: 0.4;
-  margin-top: 64px;
+  margin-top: 12px; /* halves the gap to the line above (was 64px on top of the flex gap) */
 }
 .ellipsis .dot {
   display: inline-block;
@@ -272,7 +273,7 @@ body {
 .ts-title {
   font-size: var(--ts-title-size);
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: normal;
   line-height: 1.05;
   white-space: nowrap;
 }
@@ -287,6 +288,31 @@ body {
   font-weight: 360;
   letter-spacing: 0.03em;
   opacity: 0.7;
+  white-space: nowrap;
+}
+/* name -> LinkedIn; subtle underline grows in on hover, under the name only */
+.credit-link {
+  position: relative;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.credit-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.15em;
+  height: 1px;
+  background: currentColor;
+  opacity: 0;
+  transform: scaleX(0);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+}
+.credit-link:hover::after {
+  opacity: 0.6;
+  transform: scaleX(1);
 }
 .press {
   position: fixed;
@@ -400,7 +426,7 @@ body {
   cursor: pointer;
   opacity: 0;
   pointer-events: auto;
-  transition: opacity 0.8s ease; /* slow fade-out on key press */
+  transition: opacity 0.8s ease, filter 0.8s ease;
 }
 .arrow-glyph {
   display: block;
@@ -424,19 +450,25 @@ body {
   pointer-events: none;
   cursor: default;
 }
-/* forward arrow, once the beat is done: fade in (1.2s) to 40%, then pulse 40% <-> 20% */
+/* forward arrow: waits blurred + invisible; on advance it fades out with a blur,
+   the same feel as the text blur-out. */
+.arrow-right {
+  filter: blur(8px);
+  transition: opacity 0.75s ease, filter 0.75s ease;
+}
+/* once the beat is done: de-blur + fade in, then loop 30% <-> 5% */
 .arrow-right.ready {
-  opacity: 0.4;
-  transition: opacity 1.2s ease;
-  animation: arrow-pulse 2.6s ease-in-out 1.2s infinite;
+  opacity: 0.3;
+  filter: blur(0px);
+  animation: arrow-pulse 2.6s ease-in-out 0.75s infinite;
 }
 @keyframes arrow-pulse {
   0%,
   100% {
-    opacity: 0.4;
+    opacity: 0.3;
   }
   50% {
-    opacity: 0.2;
+    opacity: 0.05;
   }
 }
 
@@ -461,6 +493,11 @@ body {
   padding: 0;
   cursor: pointer;
 }
+/* only clickable while the interface is actually visible, so hidden dots never
+   swallow a tap meant to advance the story */
+.controls.show .step {
+  pointer-events: auto;
+}
 .step::after {
   content: '';
   width: 3px;
@@ -468,15 +505,22 @@ body {
   border-radius: 50%;
   background: var(--fg);
   opacity: 0.12;
-  transition: opacity 0.3s ease, width 0.3s ease, height 0.3s ease;
+  transition: opacity 0.3s ease, width 0.3s ease, height 0.3s ease, transform 0.3s ease, background-color 0.3s ease;
 }
 .step:hover::after {
-  opacity: 0.7;
+  opacity: 1;
+  background: var(--grad-2);
+  transform: scale(1.2);
 }
 .step.done::after {
   width: 6px;
   height: 6px;
   opacity: 0.5;
+}
+.step.done:hover::after {
+  opacity: 1;
+  background: var(--grad-2);
+  transform: scale(1.2);
 }
 
 /* portrait: ask to rotate. landscape scales to fit, so the gate hides. */
@@ -526,4 +570,31 @@ body {
   letter-spacing: 0.01em;
   max-width: 18ch;
   opacity: 0.85;
+}
+
+/* ---- mobile / touch: maximize the central reading space ---- */
+@media (pointer: coarse) {
+  /* RESTART hard-left, LIGHT/DARK hard-right, so nothing crowds the vertical centre */
+  .topbar {
+    left: 1rem;
+    right: 1rem;
+    width: auto;
+    transform: none;
+    justify-content: space-between;
+    gap: 0;
+  }
+  .sep {
+    display: none;
+  }
+}
+
+/* when the browser chrome eats the height, drop the bottom progress strip and let
+   the text use a height-driven size so even long beats fit without clipping */
+@media (pointer: coarse) and (max-height: 560px) {
+  .progress {
+    display: none;
+  }
+  :root {
+    --beat-size: clamp(1.3rem, 6vh, 2.4rem);
+  }
 }

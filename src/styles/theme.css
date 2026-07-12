@@ -10,8 +10,8 @@
 
   --font: 'Bitter', Georgia, 'Times New Roman', serif;
 
-  /* base size scales with the smaller of width/height so landscape phones fit */
-  --beat-size: clamp(2rem, min(6.3vw, 8.5vh), 3.9rem);
+  /* base size scales with the smaller of width/height so landscape phones fit (-15%) */
+  --beat-size: clamp(1.7rem, min(5.36vw, 7.23vh), 3.32rem);
   --title-size: clamp(3.3rem, 9vw, 5.4rem);
   --line: 1.26;
   /* text box width: only 3x the arrow-to-edge gap (1.6rem) between text and the arrows.
@@ -21,8 +21,8 @@
   /* vertical rhythm between separately-revealed parts (stack/grid) */
   --group-gap: 2.48em;
 
-  /* optical center, nudged 5% lower */
-  --anchor: 45vh;
+  /* optical center, nudged a further 5% lower */
+  --anchor: 50vh;
 
   /* title screen — capped to viewport width so the one-line title never clips */
   --ts-title-size: min(calc(var(--beat-size) * 1.32), 8.5vw);

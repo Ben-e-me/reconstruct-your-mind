@@ -58,22 +58,26 @@ void main() {
 }
 `
 
+// Beni's reactbits.dev preview settings, recoloured to the rust palette. The box no
+// longer scales (see .magic-rings in global.css) — the rings grow across the stage on
+// their own, so baseRadius stays small (starts around the word) while scaleRate carries
+// them outward. noiseAmount is deliberately high — it's the grain Beni wants.
 const P = {
   color: '#d8823f',
   colorTwo: '#b0492b',
-  speed: 1.2,
-  ringCount: 7,
-  attenuation: 12,
-  lineThickness: 2,
-  baseRadius: 0.26,
-  radiusStep: 0.08,
-  scaleRate: 0.17,
-  opacity: 0.6,
-  blur: 8,
-  noiseAmount: 0.07,
+  speed: 1,
+  ringCount: 10,
+  attenuation: 15,
+  lineThickness: 1,
+  baseRadius: 0.1,
+  radiusStep: 0.05,
+  scaleRate: 0.2,
+  opacity: 0.7,
+  blur: 4,
+  noiseAmount: 0.44,
   rotation: 90,
   ringGap: 1,
-  fadeIn: 0.95,
+  fadeIn: 1,
   fadeOut: 0.5,
 }
 
