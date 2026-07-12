@@ -12,12 +12,12 @@ interface Point {
   peak: number // 0..1
 }
 
-const SPACING = 0.12 // normalized grid spacing
+const SPACING = 0.155 // normalized grid spacing (~40% fewer points than before)
 const JITTER = 0.5
 const SPARK_COUNT = 8
 const BURST = 0.5 // seconds a single plop lasts
-const WAVE = 1.4 // seconds from centre to the far corner
-const CYCLE = 3.6 // seconds per loop
+const WAVE = 2.8 // seconds from centre to the far corner (50% slower)
+const CYCLE = 5 // seconds per loop
 
 function buildPoints(): Point[] {
   const pts: Point[] = []
@@ -72,17 +72,20 @@ export function Spark({ active = true, delay = 0 }: { active?: boolean; delay?: 
     const ro = new ResizeObserver(resize)
     ro.observe(parent)
 
-    const stroke = getComputedStyle(canvas).color || '#eae6e1'
     let frame = 0
+    let strokeTick = 0
+    let stroke = getComputedStyle(canvas).color || '#eae6e1'
     const t0 = performance.now()
     const draw = (now: number) => {
       frame = requestAnimationFrame(draw)
       const t = (now - t0) / 1000
+      // re-read the contrast colour periodically so the sparks invert on theme toggle
+      if (strokeTick++ % 20 === 0) stroke = getComputedStyle(canvas).color || stroke
       const W = canvas.width
       const H = canvas.height
       const min = Math.min(W, H)
-      const radius = min * 0.05
-      const len = min * 0.032
+      const radius = min * 0.015 // 30% of the previous burst size
+      const len = min * 0.0096
       ctx.clearRect(0, 0, W, H)
       ctx.strokeStyle = stroke
       ctx.lineWidth = 1.5 * dpr

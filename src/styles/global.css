@@ -101,7 +101,10 @@ body {
 }
 .letter {
   display: inline-block;
-  will-change: transform, opacity;
+  /* no permanent will-change: framer-motion promotes a letter to its own layer only
+     while it's animating and drops it after. A static `will-change` here kept every
+     letter (hundreds at once) permanently layered, which rendered janky on a low-DPI
+     ultrawide (fine on the Retina MacBook). */
 }
 
 /* inline emphasis */
@@ -230,7 +233,7 @@ body {
   opacity: 0;
 }
 .orb-fx.pulse {
-  animation: orb-pulse 3s ease-in-out infinite; /* 1.5s in, 1.5s out */
+  animation: orb-pulse 3.9s ease-in-out infinite; /* ~1.95s in, ~1.95s out (30% slower) */
 }
 @keyframes orb-pulse {
   0%,

@@ -144,7 +144,7 @@ export function Orb({ active = true, delay = 0 }: { active?: boolean; delay?: nu
       setStarted(false)
       return
     }
-    const t = window.setTimeout(() => setStarted(true), delay * 1000)
+    const t = window.setTimeout(() => setStarted(true), (delay + 0.5) * 1000) // +0.5s later
     return () => window.clearTimeout(t)
   }, [active, delay])
 
