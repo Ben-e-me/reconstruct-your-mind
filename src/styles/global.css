@@ -590,6 +590,9 @@ body {
     --title-size: clamp(1.5rem, min(8vw, 7vh), 3rem);
     --ts-title-size: min(calc(var(--beat-size) * 1.32), 9vw);
     --ts-credit-size: calc(var(--beat-size) * 0.48); /* sublines +60% on mobile */
+    /* stack/grid gap: still tied to the font (so it scales with it) but a tighter
+       ratio on mobile, where the desktop 0.75x reads too airy on a small screen */
+    --group-gap: calc(var(--beat-size) * 0.55);
   }
   /* RESTART hard-left, LIGHT/DARK hard-right, so nothing crowds the vertical centre */
   .topbar {
