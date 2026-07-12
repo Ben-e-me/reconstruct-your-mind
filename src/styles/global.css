@@ -437,6 +437,10 @@ body {
   display: block;
   line-height: 1;
   font-size: 1.1rem;
+  /* the side arrows are <button>s that render the glyph in the system font (buttons
+     don't inherit font-family). Pin it here so the title keycap — which reuses this
+     class — renders the exact same arrow. */
+  font-family: system-ui, -apple-system, sans-serif;
 }
 .arrow-left {
   left: 1.6rem;
@@ -585,6 +589,7 @@ body {
     --beat-size: clamp(1.1rem, min(4.8vw, 5vh), 2.1rem);
     --title-size: clamp(1.5rem, min(8vw, 7vh), 3rem);
     --ts-title-size: min(calc(var(--beat-size) * 1.32), 9vw);
+    --ts-credit-size: calc(var(--beat-size) * 0.48); /* sublines +60% on mobile */
   }
   /* RESTART hard-left, LIGHT/DARK hard-right, so nothing crowds the vertical centre */
   .topbar {
@@ -597,6 +602,17 @@ body {
   }
   .sep {
     display: none;
+  }
+  /* UI stays visible on touch (no idle hide) but far less obtrusive */
+  .ctrl {
+    opacity: 0.2;
+  }
+  .ctrl:hover {
+    opacity: 0.2;
+  }
+  /* back keycap: faint, no pulse. forward keycap keeps its current behaviour. */
+  .arrow-left.show {
+    opacity: 0.1;
   }
 }
 

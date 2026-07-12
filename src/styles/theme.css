@@ -18,8 +18,10 @@
      arrow inner edge = 4rem from edge; + 3*1.6rem = 8.8rem margin per side. */
   --measure: clamp(16rem, calc(100vw - 17.6rem), 72rem);
 
-  /* vertical rhythm between separately-revealed parts (stack/grid) */
-  --group-gap: 2.48em;
+  /* vertical rhythm between separately-revealed parts (stack/grid). Tied to the text
+     size (~0.75x) so it shrinks by the same factor as the font on smaller viewports.
+     0.75 * 3.32rem ≈ the previous fixed 2.48em on desktop. */
+  --group-gap: calc(var(--beat-size) * 0.75);
 
   /* optical center. dvh (not vh) so on mobile it centres on the *visible* area,
      not the area behind the browser chrome. */

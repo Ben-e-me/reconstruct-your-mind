@@ -40,6 +40,9 @@ export function Reader() {
   const scenes = useMemo(() => parseStory(storyRaw), [])
   const { scene, revealedLocalIndex, next, prev, restart, goTo, atStart, atEnd, pos, total } = useReader(scenes)
   const uiActive = useIdleUI(2000)
+  // on touch devices the interface stays visible (dimmed via CSS) instead of hiding on
+  // idle — this removes the "first tap only wakes the UI" dead tap on mobile
+  const coarse = useMemo(() => window.matchMedia?.('(pointer: coarse)').matches ?? false, [])
   const { theme, toggle } = useTheme()
   const [phase, setPhase] = useState<'title' | 'reading'>('title')
   const [beatDone, setBeatDone] = useState(false)
@@ -169,7 +172,7 @@ export function Reader() {
       </AnimatePresence>
 
       <Controls
-        visible={uiActive}
+        visible={uiActive || coarse}
         showNav
         theme={theme}
         onToggleTheme={stop(toggle)}
